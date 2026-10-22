@@ -8,7 +8,7 @@ ready-to-install, debug-signed build.
 - Correct operator precedence, unary minus and implicit multiplication (`2(3+4)`)
 - Live result preview while typing; exact decimal math (`0.1 + 0.2 = 0.3`)
 - `⌫` deletes one character (long-press to clear), `AC` clears everything
-- Dark theme; runs on Android 5.0 (API 21) and newer
+- Dark theme; runs on Android 5.0 (API 21) and newer, targets Android 15 (API 35)
 
 ## Install
 Copy `Calculator.apk` to your phone and open it (allow "Install unknown apps"
