@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:gravity="bottom|end"
+        android:orientation="vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
+
+        <HorizontalScrollView
+            android:id="@+id/expression_scroll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:scrollbars="none">
+
+            <TextView
+                android:id="@+id/expression"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:textColor="@color/text_primary"
+                android:textSize="48sp" />
+        </HorizontalScrollView>
+
+        <TextView
+            android:id="@+id/result"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:maxLines="1"
+            android:textColor="@color/text_secondary"
+            android:textSize="28sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="5"
+        android:orientation="vertical">
+
+        <LinearLayout style="@style/Row">
+            <Button android:id="@+id/key_clear" style="@style/Key.Func" android:text="AC" />
+            <Button android:id="@+id/key_paren" style="@style/Key.Func" android:text="( )" />
+            <Button android:id="@+id/key_percent" style="@style/Key.Func" android:text="%" />
+            <Button android:id="@+id/key_div" style="@style/Key.Op" android:text="÷" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/Row">
+            <Button android:id="@+id/key_d7" style="@style/Key" android:text="7" />
+            <Button android:id="@+id/key_d8" style="@style/Key" android:text="8" />
+            <Button android:id="@+id/key_d9" style="@style/Key" android:text="9" />
+            <Button android:id="@+id/key_mul" style="@style/Key.Op" android:text="×" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/Row">
+            <Button android:id="@+id/key_d4" style="@style/Key" android:text="4" />
+            <Button android:id="@+id/key_d5" style="@style/Key" android:text="5" />
+            <Button android:id="@+id/key_d6" style="@style/Key" android:text="6" />
+            <Button android:id="@+id/key_sub" style="@style/Key.Op" android:text="−" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/Row">
+            <Button android:id="@+id/key_d1" style="@style/Key" android:text="1" />
+            <Button android:id="@+id/key_d2" style="@style/Key" android:text="2" />
+            <Button android:id="@+id/key_d3" style="@style/Key" android:text="3" />
+            <Button android:id="@+id/key_add" style="@style/Key.Op" android:text="+" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/Row">
+            <Button android:id="@+id/key_back" style="@style/Key.Func" android:text="⌫" />
+            <Button android:id="@+id/key_d0" style="@style/Key" android:text="0" />
+            <Button android:id="@+id/key_dot" style="@style/Key" android:text="." />
+            <Button android:id="@+id/key_equals" style="@style/Key.Op" android:text="=" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
