@@ -38,6 +38,11 @@ class CallRecordingService : Service() {
         private const val NOTIFICATION_ID = 42
         private const val TAG = "CallRecordingService"
 
+        /** True while a recording is in progress; read by the UI to show state. */
+        @Volatile
+        var isActive: Boolean = false
+            private set
+
         /** Folder where recordings are stored (app-private external files dir). */
         fun recordingsDir(context: Context): File {
             val dir = File(context.getExternalFilesDir(null), "recordings")
@@ -65,41 +70,46 @@ class CallRecordingService : Service() {
         val outFile = File(recordingsDir(this), "call_$timestamp.m4a")
         currentFile = outFile
 
-        try {
-            val rec = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                MediaRecorder(this)
-            } else {
-                @Suppress("DEPRECATION")
-                MediaRecorder()
+        // Try audio sources in order; some devices reject VOICE_COMMUNICATION but
+        // accept MIC. MIC always works for capturing your own side of the call.
+        val sources = intArrayOf(
+            MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+            MediaRecorder.AudioSource.MIC
+        )
+
+        for (source in sources) {
+            try {
+                val rec = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    MediaRecorder(this)
+                } else {
+                    @Suppress("DEPRECATION")
+                    MediaRecorder()
+                }
+                rec.setAudioSource(source)
+                rec.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                rec.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                rec.setAudioEncodingBitRate(128_000)
+                rec.setAudioSamplingRate(44_100)
+                rec.setOutputFile(outFile.absolutePath)
+                rec.prepare()
+                rec.start()
+
+                recorder = rec
+                isRecording = true
+                isActive = true
+                Log.i(TAG, "Recording started: ${outFile.absolutePath} (source=$source)")
+                return
+            } catch (e: Exception) {
+                Log.e(TAG, "Audio source $source failed, trying next", e)
+                cleanupRecorder()
             }
-
-            // Try the richest source first, then fall back. On API 29+ VOICE_CALL
-            // throws SecurityException for third-party apps, so we catch and retry.
-            val audioSource = pickAudioSource()
-            rec.setAudioSource(audioSource)
-            rec.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            rec.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            rec.setAudioEncodingBitRate(128_000)
-            rec.setAudioSamplingRate(44_100)
-            rec.setOutputFile(outFile.absolutePath)
-            rec.prepare()
-            rec.start()
-
-            recorder = rec
-            isRecording = true
-            Log.i(TAG, "Recording started: ${outFile.absolutePath} (source=$audioSource)")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to start recording", e)
-            cleanupRecorder()
-            stopSelf()
         }
-    }
 
-    /** Prefer VOICE_COMMUNICATION; MIC is the safe universal fallback. */
-    private fun pickAudioSource(): Int {
-        return MediaRecorder.AudioSource.VOICE_COMMUNICATION
-        // If a device/ROM supports it you could try VOICE_CALL here instead,
-        // but it will SecurityException on stock Android 10+.
+        // Every source failed -> give up cleanly so we don't leave a dead service.
+        Log.e(TAG, "Could not start recording with any audio source")
+        outFile.delete()
+        stopForegroundCompat()
+        stopSelf()
     }
 
     private fun stopRecording() {
@@ -126,6 +136,7 @@ class CallRecordingService : Service() {
         }
         recorder = null
         isRecording = false
+        isActive = false
     }
 
     private fun startInForeground() {

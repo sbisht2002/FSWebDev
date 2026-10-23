@@ -25,11 +25,17 @@ modern Android, and this project does not attempt one.
 
 ## What it does
 
-- Detects when a call connects (`PHONE_STATE` → `OFFHOOK`) and starts a
-  foreground recording service.
-- Records to `AAC/.m4a` using `MediaRecorder` with the
-  `VOICE_COMMUNICATION` audio source.
-- Stops and saves when the call ends (`IDLE`).
+- **Manual record button** — tap **Start recording** in the app (e.g. during a
+  call on speaker) and **Stop** when done. This is the reliable path and works
+  on all supported Android versions.
+- **Auto-record (best effort)** — detects when a call connects
+  (`PHONE_STATE` → `OFFHOOK`) and tries to start recording. **This only works on
+  Android 11 and below.** On Android 12+ the OS forbids starting a microphone
+  foreground service from a background broadcast
+  (`ForegroundServiceStartNotAllowedException`), so auto-start is silently
+  skipped — use the manual button instead.
+- Records to `AAC/.m4a` using `MediaRecorder` (`VOICE_COMMUNICATION`, falling
+  back to `MIC`).
 - Lists saved recordings in the app; tap one to play it in any media player.
 
 Recordings are stored in the app's private external files dir:

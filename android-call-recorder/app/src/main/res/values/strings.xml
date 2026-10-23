@@ -6,6 +6,11 @@
     <string name="status_need_perms">Permissions needed to record calls.</string>
     <string name="grant_permissions">Grant permissions</string>
     <string name="refresh">Refresh list</string>
+    <string name="start_recording">Start recording</string>
+    <string name="stop_recording">Stop recording</string>
+    <string name="recording_now">● Recording…</string>
+    <string name="manual_hint">Tap to record now (e.g. during a call, with the app open or on speaker). Auto-record on call start is blocked by Android 12+.</string>
+    <string name="need_perms_first">Grant permissions first.</string>
 
     <string name="perms_granted">Permissions granted.</string>
     <string name="perms_denied">Permissions denied. The app cannot record without them.</string>
