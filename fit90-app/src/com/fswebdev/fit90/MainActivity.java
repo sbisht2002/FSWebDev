@@ -36,7 +36,7 @@ public class MainActivity extends Activity {
     private static final int WATER_SOFT = 0xFFE2EDFC;
     private static final int MISSED = 0xFFF4E1DE;
 
-    private static final String[] TABS = {"Workout", "Diet", "Water", "Progress"};
+    private static final String[] TABS = {"Workout", "Stamina", "Diet", "Water", "Progress"};
     private static final int[] WATER_AMOUNTS = {100, 200, 500};
 
     private Store store;
@@ -148,8 +148,9 @@ public class MainActivity extends Activity {
         content.removeAllViews();
         switch (tab) {
             case 0: renderWorkout(); break;
-            case 1: renderDiet(); break;
-            case 2: renderWater(); break;
+            case 1: renderStamina(); break;
+            case 2: renderDiet(); break;
+            case 3: renderWater(); break;
             default: renderProgress(); break;
         }
     }
@@ -198,18 +199,7 @@ public class MainActivity extends Activity {
                     render();
                 }
             });
-            LinearLayout body = (LinearLayout) row.getChildAt(1);
-            body.addView(text(e.name, 16, TEXT, true));
-            LinearLayout meta = new LinearLayout(this);
-            meta.setGravity(Gravity.CENTER_VERTICAL);
-            meta.setPadding(0, dp(4), 0, dp(4));
-            meta.addView(text(e.dose, 14, TEXT, false));
-            TextView chip = chip(e.gear, gearColor(e.gear), gearSoft(e.gear));
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-2, -2);
-            lp.leftMargin = dp(8);
-            meta.addView(chip, lp);
-            body.addView(meta);
-            body.addView(text(e.cue, 13, SUB, false));
+            fillExercise((LinearLayout) row.getChildAt(1), e);
             content.addView(row);
         }
 
@@ -219,13 +209,88 @@ public class MainActivity extends Activity {
     private int gearColor(String gear) {
         if (Plan.BAR.equals(gear)) return 0xFF7A4BC2;
         if (Plan.DB.equals(gear)) return 0xFFB5651D;
+        if (Pelvic.PELVIC.equals(gear)) return 0xFFC2416B;
+        if (Pelvic.CARDIO.equals(gear) || Pelvic.BREATH.equals(gear)) return WATER;
         return ACCENT;
     }
 
     private int gearSoft(String gear) {
         if (Plan.BAR.equals(gear)) return 0xFFEEE6F8;
         if (Plan.DB.equals(gear)) return 0xFFF8ECDF;
+        if (Pelvic.PELVIC.equals(gear)) return 0xFFF9E3EA;
+        if (Pelvic.CARDIO.equals(gear) || Pelvic.BREATH.equals(gear)) return WATER_SOFT;
         return ACCENT_SOFT;
+    }
+
+    // ---------------------------------------------------------------- stamina
+
+    private void renderStamina() {
+        final int day = selectedDay;
+        Plan.Exercise[] routine = Pelvic.routine(day);
+
+        content.addView(overline("LEVEL " + Plan.level(day) + " · " + Plan.levelName(day).toUpperCase(Locale.US)
+                + " · EVERY DAY"));
+        content.addView(title("Stamina"));
+        content.addView(dayNav());
+
+        int done = store.pelvicDoneCount(day);
+        int total = routine.length;
+        int streak = 0;
+        int d = store.pelvicDoneCount(store.planDay()) >= total ? store.planDay() : store.planDay() - 1;
+        while (d >= 1 && store.pelvicDoneCount(d) >= Pelvic.routine(d).length) {
+            streak++;
+            d--;
+        }
+        LinearLayout head = card();
+        head.addView(text("Pelvic floor & stamina", 17, TEXT, true));
+        TextView status = text((done == total ? "Routine complete ✓" : done + " of " + total + " done")
+                + " · " + streak + "-day streak", 13, done == total ? ACCENT : SUB, false);
+        status.setPadding(0, dp(4), 0, dp(10));
+        head.addView(status);
+        head.addView(bar(done / (float) total, ACCENT, ACCENT_SOFT));
+        TextView how = text(Pelvic.HOW_TO, 13, SUB, false);
+        how.setPadding(0, dp(12), 0, 0);
+        how.setLineSpacing(0, 1.15f);
+        head.addView(how);
+        content.addView(head);
+
+        for (int i = 0; i < routine.length; i++) {
+            final int index = i;
+            Plan.Exercise e = routine[i];
+            LinearLayout row = checkRow(store.isPelvicDone(day, i), new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (guardFuture(day)) return;
+                    store.setPelvicDone(day, index, !store.isPelvicDone(day, index));
+                    render();
+                }
+            });
+            fillExercise((LinearLayout) row.getChildAt(1), e);
+            content.addView(row);
+        }
+
+        LinearLayout notes = card();
+        notes.addView(text("Good to know", 15, TEXT, true));
+        for (String n : Pelvic.NOTES) {
+            TextView tv = text("•  " + n, 13, SUB, false);
+            tv.setPadding(0, dp(6), 0, 0);
+            notes.addView(tv);
+        }
+        content.addView(notes);
+    }
+
+    private void fillExercise(LinearLayout body, Plan.Exercise e) {
+        body.addView(text(e.name, 16, TEXT, true));
+        LinearLayout meta = new LinearLayout(this);
+        meta.setGravity(Gravity.CENTER_VERTICAL);
+        meta.setPadding(0, dp(4), 0, dp(4));
+        TextView dose = text(e.dose, 14, TEXT, false);
+        meta.addView(dose, new LinearLayout.LayoutParams(0, -2, 1));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-2, -2);
+        lp.leftMargin = dp(8);
+        meta.addView(chip(e.gear, gearColor(e.gear), gearSoft(e.gear)), lp);
+        body.addView(meta);
+        body.addView(text(e.cue, 13, SUB, false));
     }
 
     private boolean guardFuture(int day) {

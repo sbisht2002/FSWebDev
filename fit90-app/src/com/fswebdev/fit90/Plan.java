@@ -15,7 +15,7 @@ public final class Plan {
         public final String gear;
         public final String cue;
 
-        Exercise(String name, String dose, String gear, String cue) {
+        public Exercise(String name, String dose, String gear, String cue) {
             this.name = name;
             this.dose = dose;
             this.gear = gear;

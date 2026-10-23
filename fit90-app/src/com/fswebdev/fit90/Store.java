@@ -55,6 +55,18 @@ public final class Store {
         return Integer.bitCount(prefs.getInt("w" + day, 0));
     }
 
+    public boolean isPelvicDone(int day, int index) {
+        return (prefs.getInt("k" + day, 0) & (1 << index)) != 0;
+    }
+
+    public void setPelvicDone(int day, int index, boolean done) {
+        toggle("k" + day, index, done);
+    }
+
+    public int pelvicDoneCount(int day) {
+        return Integer.bitCount(prefs.getInt("k" + day, 0));
+    }
+
     public boolean isMealDone(int day, int index) {
         return (prefs.getInt("m" + day, 0) & (1 << index)) != 0;
     }

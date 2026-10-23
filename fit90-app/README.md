@@ -9,6 +9,11 @@
 - Every exercise has sets × reps, the equipment it needs and a form cue; tap to mark it done
 - Warm-up, cool-down and a weekly progression tip
 
+**Stamina** — daily pelvic-floor and stamina routine (10–15 min + cardio), 3 levels that follow the plan.
+- Slow, quick, long-hold and "elevator" Kegels, glute bridges and squats with a pelvic squeeze,
+  reverse-Kegel breathing, hip mobility and cardio
+- Tap to mark each item; shows a daily streak and evidence-based notes (no size myths)
+
 **Diet** — budget Indian meals for a 70 kg, 24-year-old maintaining weight while building muscle.
 - About 120 g protein, about 2,400–2,570 kcal, at most ₹100 a day (all 6 menus: 121–127 g, ₹88–99)
 - Veg / Non-veg switch you can flip any time; 3 rotating menus each
@@ -31,6 +36,7 @@ sudo apt-get install aapt android-sdk-platform-23 dalvik-exchange apksigner zipa
 
 ## Code
 - `src/com/fswebdev/fit90/Plan.java` – the 90-day workout program
+- `src/com/fswebdev/fit90/Pelvic.java` – the daily pelvic-floor & stamina routine
 - `src/com/fswebdev/fit90/Diet.java` – foods, prices and menus (totals are computed from these)
 - `src/com/fswebdev/fit90/Store.java` – saved progress, diet choice and water log
 - `src/com/fswebdev/fit90/MainActivity.java` – the four screens
