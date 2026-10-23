@@ -6,7 +6,10 @@
 **Workout** — 90-day plan using only bodyweight, a pull-up bar and two dumbbells.
 - Level 1 Beginner (days 1–30), Level 2 Intermediate (31–60), Level 3 Advanced (61–90)
 - Weekly split: Push · Pull · Legs & Core · Push · Pull · Legs & Core · Rest
-- Every exercise has sets × reps, the equipment it needs and a form cue; tap to mark it done
+- Every exercise has an animated stick-figure demo, sets × reps, the equipment it needs and a form cue;
+  tap to mark it done
+- Targets rise automatically: reps or seconds go up each session (shown as "↑ +1 rep vs last time"),
+  then reset to the harder exercises of the next level
 - Warm-up, cool-down and a weekly progression tip
 
 **Stamina** — daily pelvic-floor and stamina routine (10–15 min + cardio), 3 levels that follow the plan.
@@ -40,4 +43,5 @@ sudo apt-get install aapt android-sdk-platform-23 dalvik-exchange apksigner zipa
 - `src/com/fswebdev/fit90/Diet.java` – foods, prices and menus (totals are computed from these)
 - `src/com/fswebdev/fit90/Store.java` – saved progress, diet choice and water log
 - `src/com/fswebdev/fit90/MainActivity.java` – the four screens
+- `src/com/fswebdev/fit90/Anim.java`, `AnimView.java` – exercise animations (poses + two-bone IK)
 - `src/com/fswebdev/fit90/RingView.java` – water progress ring

@@ -171,6 +171,7 @@ public class MainActivity extends Activity {
 
         int done = store.workoutDoneCount(day);
         int total = w.exercises.length;
+        int session = w.rest ? 0 : Plan.sessionIndex(day);
         LinearLayout head = card();
         head.addView(text(w.title, 17, TEXT, true));
         TextView status = text(done == total ? "Day complete ✓" : done + " of " + total + " done", 13,
@@ -179,7 +180,8 @@ public class MainActivity extends Activity {
         head.addView(status);
         head.addView(bar(done / (float) total, ACCENT, ACCENT_SOFT));
         if (!w.rest) {
-            TextView tip = text(Plan.progressionTip(day), 13, SUB, false);
+            TextView tip = text("Session " + (session + 1) + " of this workout in Level " + Plan.level(day)
+                    + ". " + Plan.progressionTip(day), 13, SUB, false);
             tip.setPadding(0, dp(12), 0, 0);
             head.addView(tip);
         }
@@ -199,7 +201,7 @@ public class MainActivity extends Activity {
                     render();
                 }
             });
-            fillExercise((LinearLayout) row.getChildAt(1), e);
+            fillExercise((LinearLayout) row.getChildAt(1), e, session, 1);
             content.addView(row);
         }
 
@@ -265,7 +267,7 @@ public class MainActivity extends Activity {
                     render();
                 }
             });
-            fillExercise((LinearLayout) row.getChildAt(1), e);
+            fillExercise((LinearLayout) row.getChildAt(1), e, (day - 1) % 30, 3);
             content.addView(row);
         }
 
@@ -279,17 +281,28 @@ public class MainActivity extends Activity {
         content.addView(notes);
     }
 
-    private void fillExercise(LinearLayout body, Plan.Exercise e) {
+    private void fillExercise(LinearLayout body, Plan.Exercise e, int session, int pace) {
+        AnimView anim = new AnimView(this, e.name, TEXT, 0xFFB7BAC0, CARD, BG);
+        LinearLayout.LayoutParams alp = new LinearLayout.LayoutParams(-1, dp(150));
+        alp.bottomMargin = dp(12);
+        body.addView(anim, alp);
+
+        String[] dose = Plan.dose(e, session, pace);
         body.addView(text(e.name, 16, TEXT, true));
         LinearLayout meta = new LinearLayout(this);
         meta.setGravity(Gravity.CENTER_VERTICAL);
         meta.setPadding(0, dp(4), 0, dp(4));
-        TextView dose = text(e.dose, 14, TEXT, false);
-        meta.addView(dose, new LinearLayout.LayoutParams(0, -2, 1));
+        TextView doseView = text(dose[0], 15, TEXT, true);
+        meta.addView(doseView, new LinearLayout.LayoutParams(0, -2, 1));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-2, -2);
         lp.leftMargin = dp(8);
         meta.addView(chip(e.gear, gearColor(e.gear), gearSoft(e.gear)), lp);
         body.addView(meta);
+        if (dose[1] != null) {
+            TextView up = text("↑ " + dose[1] + " vs last time", 12, ACCENT, true);
+            up.setPadding(0, 0, 0, dp(4));
+            body.addView(up);
+        }
         body.addView(text(e.cue, 13, SUB, false));
     }
 
