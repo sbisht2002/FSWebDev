@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Simple Call Recorder</string>
+
+    <string name="status_ready">Ready. Recording will start automatically during calls.</string>
+    <string name="status_need_perms">Permissions needed to record calls.</string>
+    <string name="grant_permissions">Grant permissions</string>
+    <string name="refresh">Refresh list</string>
+
+    <string name="perms_granted">Permissions granted.</string>
+    <string name="perms_denied">Permissions denied. The app cannot record without them.</string>
+
+    <string name="recordings_heading">Recordings</string>
+    <string name="no_recordings">No recordings yet. Make or receive a call.</string>
+    <string name="item_subtitle">%1$s · %2$s</string>
+    <string name="play_with">Play recording with</string>
+
+    <string name="channel_name">Call recording</string>
+    <string name="recording_title">Recording call</string>
+    <string name="recording_text">A call is being recorded.</string>
+</resources>
