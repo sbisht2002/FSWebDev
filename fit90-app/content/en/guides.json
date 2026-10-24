@@ -1,0 +1,230 @@
+{
+ "version": "1.0.0",
+ "last_reviewed": "2026-10-24",
+ "disclaimer": "This guide is general education about men's sexual health and wellbeing. It is not medical advice and does not replace diagnosis or treatment by a qualified professional. Stop any exercise that causes pain. See a doctor about sudden or persistent problems, pain, blood in urine or semen, or if you have diabetes, high blood pressure or heart disease. Emergencies (including an erection lasting more than 4 hours or chest pain): call 112. Free mental-health support in India: Tele-MANAS 14416. This guide never recommends supplements.",
+ "guides": [
+  {
+   "id": "last-longer-playbook",
+   "title": "The Last-Longer Playbook",
+   "subtitle": "Understanding early ejaculation and building control, step by step",
+   "articles": [
+    "ll-01",
+    "ll-02",
+    "ll-03",
+    "ll-04",
+    "ll-05",
+    "ll-06",
+    "br-01",
+    "pf-03",
+    "sa-01"
+   ]
+  },
+  {
+   "id": "stronger-erections",
+   "title": "Stronger Erections Through Lifestyle",
+   "subtitle": "Diet, exercise, sleep and the habits that protect your blood vessels",
+   "articles": [
+    "ex-01",
+    "ex-02",
+    "ex-03",
+    "di-01",
+    "di-02",
+    "di-03",
+    "di-04",
+    "di-05",
+    "ls-01",
+    "ls-02",
+    "ls-03",
+    "ls-05",
+    "ls-06",
+    "sa-01"
+   ]
+  },
+  {
+   "id": "calm-and-confident",
+   "title": "Calm and Confident",
+   "subtitle": "Beating performance anxiety with CBT-style skills, attention and kindness",
+   "articles": [
+    "ca-01",
+    "ca-02",
+    "ca-03",
+    "ca-04",
+    "ca-05",
+    "ca-06",
+    "ca-07",
+    "br-01",
+    "ls-04"
+   ]
+  },
+  {
+   "id": "pelvic-floor-handbook",
+   "title": "The Pelvic Floor Handbook for Men",
+   "subtitle": "Finding, training and relaxing the muscles that support sexual health",
+   "articles": [
+    "pf-01",
+    "pf-02",
+    "pf-03",
+    "ex-03",
+    "sa-01"
+   ]
+  },
+  {
+   "id": "intimacy-skills",
+   "title": "Intimacy Skills",
+   "subtitle": "Becoming a more connected partner",
+   "articles": [
+    "in-01",
+    "in-02",
+    "in-03",
+    "in-04",
+    "in-05",
+    "in-06",
+    "in-07",
+    "in-08"
+   ]
+  },
+  {
+   "id": "partners-guide",
+   "title": "The Partner's Guide",
+   "subtitle": "How to be supportive, and the steps of sensate focus",
+   "documents": [
+    "partner-guide.md"
+   ],
+   "articles": [
+    "ca-07",
+    "in-08"
+   ]
+  },
+  {
+   "id": "30-day-starter",
+   "title": "30-Day Starter Plan",
+   "subtitle": "A printable checklist to build the habits that matter",
+   "articles": [
+    "pf-01",
+    "br-01"
+   ],
+   "checklist_days": [
+    {
+     "day": 1,
+     "text": "Read 'Finding your pelvic floor muscles' and try 5 gentle squeezes lying down"
+    },
+    {
+     "day": 2,
+     "text": "Pelvic-floor level 1 session + 3 minutes of slow breathing"
+    },
+    {
+     "day": 3,
+     "text": "Read 'Common Kegel mistakes'. Check: breathing, buttocks soft, full release"
+    },
+    {
+     "day": 4,
+     "text": "Pelvic-floor session + 15-minute brisk walk"
+    },
+    {
+     "day": 5,
+     "text": "Read 'Why relaxing matters'. Practise 10 drops with slow breathing"
+    },
+    {
+     "day": 6,
+     "text": "Pelvic-floor session + body-scan audio"
+    },
+    {
+     "day": 7,
+     "text": "Weekly check-in. Rest day: 5 minutes of slow breathing"
+    },
+    {
+     "day": 8,
+     "text": "Read 'Understanding early ejaculation' or 'How performance anxiety works'"
+    },
+    {
+     "day": 9,
+     "text": "Pelvic-floor session + 20-minute walk"
+    },
+    {
+     "day": 10,
+     "text": "Write one anxious thought and a balanced version in your journal"
+    },
+    {
+     "day": 11,
+     "text": "Pelvic-floor session + extended-exhale breathing"
+    },
+    {
+     "day": 12,
+     "text": "Read 'Arousal awareness: the 0–10 scale'. Practise rating stress through the day"
+    },
+    {
+     "day": 13,
+     "text": "Pelvic-floor session + 20-minute walk"
+    },
+    {
+     "day": 14,
+     "text": "Weekly check-in. Rest day: pre-intimacy calm audio"
+    },
+    {
+     "day": 15,
+     "text": "Read 'Heart health is erection health'. Make one food swap today"
+    },
+    {
+     "day": 16,
+     "text": "Pelvic-floor session + 25-minute walk"
+    },
+    {
+     "day": 17,
+     "text": "Solo stop-start or awareness practice; log your control from 0 to 10"
+    },
+    {
+     "day": 18,
+     "text": "Read 'Sleep and your hormones'. Phone away 30 minutes before bed"
+    },
+    {
+     "day": 19,
+     "text": "Pelvic-floor session + strength circuit (squats, push-ups, bridges)"
+    },
+    {
+     "day": 20,
+     "text": "Read 'Communication and consent' and plan one conversation"
+    },
+    {
+     "day": 21,
+     "text": "Weekly check-in. Rest day: body scan"
+    },
+    {
+     "day": 22,
+     "text": "Pelvic-floor session + 30-minute walk"
+    },
+    {
+     "day": 23,
+     "text": "Read 'From spectating to sensation'. Do a 2-minute mindful shower"
+    },
+    {
+     "day": 24,
+     "text": "Pelvic-floor session; consider moving up a level if sessions feel easy"
+    },
+    {
+     "day": 25,
+     "text": "Solo practice with breathing and relaxation; log control"
+    },
+    {
+     "day": 26,
+     "text": "Pelvic-floor session + 30-minute walk"
+    },
+    {
+     "day": 27,
+     "text": "Read 'Self-compassion when things don't go to plan'"
+    },
+    {
+     "day": 28,
+     "text": "Weekly check-in. Review your progress page"
+    },
+    {
+     "day": 29,
+     "text": "Pelvic-floor session + strength circuit"
+    },
+    {
+     "day": 30,
+     "text": "Celebrate 30 days. Choose your next goal and keep your favourite habits"
+    }
+   ]
+  }
+ ]
+}

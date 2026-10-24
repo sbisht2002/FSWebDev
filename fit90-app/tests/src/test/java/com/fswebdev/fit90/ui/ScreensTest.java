@@ -131,6 +131,8 @@ public class ScreensTest {
         shot(start(PdfActivity.class, null), "29_pdfs");
         shot(start(FitnessProfileActivity.class, null), "30_body_profile");
         shot(start(FitnessActivity.class, null), "31_fitness");
+        shot(start(ArticleActivity.class, new Intent(c, ArticleActivity.class).putExtra(ArticleActivity.EXTRA_ID, "ll-03")), "32_article");
+        shot(start(PdfActivity.class, new Intent(c, PdfActivity.class).putExtra(PdfActivity.EXTRA_ID, "partners-guide")), "33_pdf_view");
     }
 
     @Test

@@ -204,6 +204,7 @@ public class FitnessActivity extends Activity {
                 public void onClick(View v) {
                     if (guardFuture(day)) return;
                     store.setWorkoutDone(day, index, !store.isWorkoutDone(day, index));
+                    recordIfComplete(day);
                     render();
                 }
             });
@@ -297,6 +298,17 @@ public class FitnessActivity extends Activity {
 
     private void fillExercise(LinearLayout body, Plan.Exercise e, int session, int pace) {
         fillExercise(body, e, session, pace, 0);
+    }
+
+    /** A fully ticked workout day counts as a session for streaks, XP and badges (once per plan day). */
+    private void recordIfComplete(int day) {
+        Plan.Workout w = Plan.workout(day);
+        if (store.workoutDoneCount(day) < w.exercises.length) return;
+        String ref = "day-" + day;
+        for (com.fswebdev.fit90.data.Vault.Event e : com.fswebdev.fit90.data.Progress.sessions(this)) {
+            if (ref.equals(e.data.optString("ref"))) return;
+        }
+        com.fswebdev.fit90.data.Progress.record(this, w.rest ? "walk" : "workout", ref, w.rest ? 30 : 35, 0, 0, null);
     }
 
     /** Low-impact swaps for heavier bodies (protects knees and ankles). */
