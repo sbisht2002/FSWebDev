@@ -1,831 +1,534 @@
 package com.fswebdev.fit90;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.graphics.Color;
-import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
-import android.os.Build;
+import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.fswebdev.fit90.content.Content;
+import com.fswebdev.fit90.content.Markdown;
+import com.fswebdev.fit90.core.Days;
+import com.fswebdev.fit90.core.Gamify;
+import com.fswebdev.fit90.core.PlanGenerator;
+import com.fswebdev.fit90.core.RedFlags;
+import com.fswebdev.fit90.data.Progress;
+import com.fswebdev.fit90.data.Vault;
+import com.fswebdev.fit90.fitness.FitnessActivity;
+import com.fswebdev.fit90.ui.BaseActivity;
+import com.fswebdev.fit90.ui.Ui;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
-public class MainActivity extends Activity {
+/** Home: Today, Programs, Library, Coach (if enabled) and Progress tabs. */
+public class MainActivity extends BaseActivity {
 
-    private static final int BG = 0xFFF6F6F3;
-    private static final int CARD = 0xFFFFFFFF;
-    private static final int TEXT = 0xFF17181A;
-    private static final int SUB = 0xFF6E7076;
-    private static final int LINE = 0xFFE7E7E2;
-    private static final int ACCENT = 0xFF1E8A5A;
-    private static final int ACCENT_SOFT = 0xFFDDF0E5;
-    private static final int WATER = 0xFF2F7FE6;
-    private static final int WATER_SOFT = 0xFFE2EDFC;
-    private static final int MISSED = 0xFFF4E1DE;
+    private static final int TODAY = 0, PROGRAMS = 1, LIBRARY = 2, COACH = 3, PROGRESS = 4;
 
-    private static final String[] TABS = {"Workout", "Stamina", "Diet", "Water", "Progress"};
-    private static final int[] WATER_AMOUNTS = {100, 200, 500};
-
-    private Store store;
-    private int tab;
-    private int selectedDay;
-    private int lastToday;
-
-    private ScrollView scroll;
-    private LinearLayout content;
-    private final TextView[] tabViews = new TextView[TABS.length];
+    private int tab = TODAY;
+    private LinearLayout nav;
+    private final List<Integer> tabs = new ArrayList<Integer>();
+    private String query = "";
+    private String category = "";
+    private boolean bookmarksOnly;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        store = new Store(this);
-        lastToday = store.planDay();
-        selectedDay = lastToday;
-        if (savedInstanceState != null) {
-            tab = savedInstanceState.getInt("tab");
-            selectedDay = savedInstanceState.getInt("day", selectedDay);
+    protected void onCreate(Bundle b) {
+        super.onCreate(b);
+        if (!settings.onboarded()) {
+            startActivity(new Intent(this, OnboardingActivity.class));
+            finish();
+            return;
         }
-        lightSystemBars();
-        buildShell();
+        if (b != null) tab = b.getInt("tab", TODAY);
+        tabs.add(TODAY);
+        tabs.add(PROGRAMS);
+        tabs.add(LIBRARY);
+        if (BuildConfig.AI_COACH_ENABLED && settings.coachOn()) tabs.add(COACH);
+        tabs.add(PROGRESS);
+        build();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
         out.putInt("tab", tab);
-        out.putInt("day", selectedDay);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        int today = store.planDay();
-        if (today != lastToday) {
-            // The date rolled over while the app was in the background.
-            lastToday = today;
-            selectedDay = today;
-        }
-        render();
+        if (content != null) render();
     }
 
-    // ------------------------------------------------------------------ shell
-
-    @SuppressWarnings("deprecation")
-    private void lightSystemBars() {
-        getWindow().setStatusBarColor(BG);
-        getWindow().setNavigationBarColor(BG);
-        int flags = 0;
-        if (Build.VERSION.SDK_INT >= 23) flags |= 0x00002000; // SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        if (Build.VERSION.SDK_INT >= 27) flags |= 0x00000010; // SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-        getWindow().getDecorView().setSystemUiVisibility(flags);
+    private void build() {
+        screen(getString(R.string.app_name), false);
+        action(R.drawable.ic_profile, getString(R.string.settings), new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                open(SettingsActivity.class);
+            }
+        });
+        nav = ui.row();
+        nav.setBackgroundColor(p.card);
+        nav.setPadding(0, ui.dp(4), 0, ui.dp(4));
+        column.addView(ui.divider());
+        column.addView(nav);
     }
 
-    private void buildShell() {
-        FrameLayout root = new FrameLayout(this);
-        root.setBackgroundColor(BG);
-        root.setFitsSystemWindows(true);
-
-        LinearLayout column = new LinearLayout(this);
-        column.setOrientation(LinearLayout.VERTICAL);
-        root.addView(column, new FrameLayout.LayoutParams(-1, -1));
-
-        scroll = new ScrollView(this);
-        scroll.setFillViewport(true);
-        content = new LinearLayout(this);
-        content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(dp(20), dp(20), dp(20), dp(24));
-        scroll.addView(content, new FrameLayout.LayoutParams(-1, -2));
-        column.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
-
-        View divider = new View(this);
-        divider.setBackgroundColor(LINE);
-        column.addView(divider, new LinearLayout.LayoutParams(-1, dp(1)));
-
-        LinearLayout nav = new LinearLayout(this);
-        nav.setBackgroundColor(CARD);
-        for (int i = 0; i < TABS.length; i++) {
-            final int index = i;
-            TextView t = new TextView(this);
-            t.setText(TABS[i]);
-            t.setGravity(Gravity.CENTER);
-            t.setTextSize(13);
-            t.setOnClickListener(new View.OnClickListener() {
+    private void render() {
+        nav.removeAllViews();
+        for (final int t : tabs) {
+            boolean on = t == tab;
+            LinearLayout item = ui.column();
+            item.setGravity(Gravity.CENTER);
+            item.setMinimumHeight(ui.dp(60));
+            item.addView(ui.icon(tabIcon(t), on ? p.accent : p.sub, 24));
+            TextView label = ui.text(tabName(t), Ui.CAPTION, on ? p.accent : p.sub);
+            label.setGravity(Gravity.CENTER);
+            item.addView(label);
+            item.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    tab = index;
+                    if (t == COACH) {
+                        open(ChatActivity.class);
+                        return;
+                    }
+                    tab = t;
                     render();
                     scroll.scrollTo(0, 0);
                 }
             });
-            tabViews[i] = t;
-            nav.addView(t, new LinearLayout.LayoutParams(0, dp(60), 1));
-        }
-        column.addView(nav, new LinearLayout.LayoutParams(-1, -2));
-        setContentView(root);
-    }
-
-    private void render() {
-        for (int i = 0; i < tabViews.length; i++) {
-            boolean on = i == tab;
-            tabViews[i].setTextColor(on ? ACCENT : SUB);
-            tabViews[i].setTypeface(Typeface.create("sans-serif-medium", on ? Typeface.BOLD : Typeface.NORMAL));
-            tabViews[i].setCompoundDrawablesWithIntrinsicBounds(null, on ? dot(ACCENT) : dot(Color.TRANSPARENT), null, null);
-            tabViews[i].setCompoundDrawablePadding(dp(4));
+            ui.asButton(item, tabName(t) + (on ? ", selected" : ""));
+            item.setSelected(on);
+            nav.addView(item, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
         }
         content.removeAllViews();
         switch (tab) {
-            case 0: renderWorkout(); break;
-            case 1: renderStamina(); break;
-            case 2: renderDiet(); break;
-            case 3: renderWater(); break;
-            default: renderProgress(); break;
+            case PROGRAMS: renderPrograms(); break;
+            case LIBRARY: renderLibrary(); break;
+            case PROGRESS: renderProgress(); break;
+            default: renderToday();
         }
     }
 
-    // ---------------------------------------------------------------- workout
-
-    private void renderWorkout() {
-        final int day = selectedDay;
-        Plan.Workout w = Plan.workout(day);
-
-        content.addView(overline("LEVEL " + Plan.level(day) + " · " + Plan.levelName(day).toUpperCase(Locale.US)
-                + " · WEEK " + Plan.weekInLevel(day)));
-        content.addView(title(w.rest ? "Rest day" : "Workout"));
-        content.addView(dayNav());
-        if (store.rawPlanDay() > Plan.DAYS) {
-            content.addView(note("You finished the 90-day plan. Restart it any time from Progress."));
+    private int tabIcon(int t) {
+        switch (t) {
+            case PROGRAMS: return R.drawable.ic_programs;
+            case LIBRARY: return R.drawable.ic_library;
+            case COACH: return R.drawable.ic_coach;
+            case PROGRESS: return R.drawable.ic_progress;
+            default: return R.drawable.ic_today;
         }
-
-        int done = store.workoutDoneCount(day);
-        int total = w.exercises.length;
-        int session = w.rest ? 0 : Plan.sessionIndex(day);
-        LinearLayout head = card();
-        head.addView(text(w.title, 17, TEXT, true));
-        TextView status = text(done == total ? "Day complete ✓" : done + " of " + total + " done", 13,
-                done == total ? ACCENT : SUB, false);
-        status.setPadding(0, dp(4), 0, dp(10));
-        head.addView(status);
-        head.addView(bar(done / (float) total, ACCENT, ACCENT_SOFT));
-        if (!w.rest) {
-            TextView tip = text("Session " + (session + 1) + " of this workout in Level " + Plan.level(day)
-                    + ". " + Plan.progressionTip(day), 13, SUB, false);
-            tip.setPadding(0, dp(12), 0, 0);
-            head.addView(tip);
-        }
-        content.addView(head);
-
-        if (!w.rest) content.addView(note(Plan.WARM_UP));
-
-        for (int i = 0; i < w.exercises.length; i++) {
-            final int index = i;
-            Plan.Exercise e = w.exercises[i];
-            boolean checked = store.isWorkoutDone(day, i);
-            LinearLayout row = checkRow(checked, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (guardFuture(day)) return;
-                    store.setWorkoutDone(day, index, !store.isWorkoutDone(day, index));
-                    render();
-                }
-            });
-            fillExercise((LinearLayout) row.getChildAt(1), e, session, 1);
-            content.addView(row);
-        }
-
-        if (!w.rest) content.addView(note(Plan.COOL_DOWN));
     }
 
-    private int gearColor(String gear) {
-        if (Plan.BAR.equals(gear)) return 0xFF7A4BC2;
-        if (Plan.DB.equals(gear)) return 0xFFB5651D;
-        if (Pelvic.PELVIC.equals(gear)) return 0xFFC2416B;
-        if (Pelvic.CARDIO.equals(gear) || Pelvic.BREATH.equals(gear)) return WATER;
-        return ACCENT;
+    private String tabName(int t) {
+        switch (t) {
+            case PROGRAMS: return getString(R.string.tab_programs);
+            case LIBRARY: return getString(R.string.tab_library);
+            case COACH: return BuildConfig.COACH_NAME;
+            case PROGRESS: return getString(R.string.tab_progress);
+            default: return getString(R.string.tab_today);
+        }
     }
 
-    private int gearSoft(String gear) {
-        if (Plan.BAR.equals(gear)) return 0xFFEEE6F8;
-        if (Plan.DB.equals(gear)) return 0xFFF8ECDF;
-        if (Pelvic.PELVIC.equals(gear)) return 0xFFF9E3EA;
-        if (Pelvic.CARDIO.equals(gear) || Pelvic.BREATH.equals(gear)) return WATER_SOFT;
-        return ACCENT_SOFT;
-    }
+    // ------------------------------------------------------------------- Today
 
-    // ---------------------------------------------------------------- stamina
+    private void renderToday() {
+        String date = new SimpleDateFormat("EEEE, d MMMM", Locale.getDefault()).format(new Date());
+        content.addView(ui.text(date, Ui.OVERLINE));
+        content.addView(ui.text(getString(R.string.today_title), Ui.DISPLAY));
+        content.addView(ui.space(12));
 
-    private void renderStamina() {
-        final int day = selectedDay;
-        Plan.Exercise[] routine = Pelvic.routine(day);
-
-        content.addView(overline("LEVEL " + Plan.level(day) + " · " + Plan.levelName(day).toUpperCase(Locale.US)
-                + " · EVERY DAY"));
-        content.addView(title("Stamina"));
-        content.addView(dayNav());
-
-        int done = store.pelvicDoneCount(day);
-        int total = routine.length;
-        int streak = 0;
-        int d = store.pelvicDoneCount(store.planDay()) >= total ? store.planDay() : store.planDay() - 1;
-        while (d >= 1 && store.pelvicDoneCount(d) >= Pelvic.routine(d).length) {
-            streak++;
-            d--;
-        }
-        LinearLayout head = card();
-        head.addView(text("Pelvic floor & stamina", 17, TEXT, true));
-        TextView status = text((done == total ? "Routine complete ✓" : done + " of " + total + " done")
-                + " · " + streak + "-day streak", 13, done == total ? ACCENT : SUB, false);
-        status.setPadding(0, dp(4), 0, dp(10));
-        head.addView(status);
-        head.addView(bar(done / (float) total, ACCENT, ACCENT_SOFT));
-        TextView how = text(Pelvic.HOW_TO, 13, SUB, false);
-        how.setPadding(0, dp(12), 0, 0);
-        how.setLineSpacing(0, 1.15f);
-        head.addView(how);
-        content.addView(head);
-
-        for (int i = 0; i < routine.length; i++) {
-            final int index = i;
-            Plan.Exercise e = routine[i];
-            LinearLayout row = checkRow(store.isPelvicDone(day, i), new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (guardFuture(day)) return;
-                    store.setPelvicDone(day, index, !store.isPelvicDone(day, index));
-                    render();
-                }
-            });
-            fillExercise((LinearLayout) row.getChildAt(1), e, (day - 1) % 30, 3);
-            content.addView(row);
-        }
-
-        LinearLayout notes = card();
-        notes.addView(text("Good to know", 15, TEXT, true));
-        for (String n : Pelvic.NOTES) {
-            TextView tv = text("•  " + n, 13, SUB, false);
-            tv.setPadding(0, dp(6), 0, 0);
-            notes.addView(tv);
-        }
-        content.addView(notes);
-    }
-
-    private void fillExercise(LinearLayout body, Plan.Exercise e, int session, int pace) {
-        AnimView anim = new AnimView(this, e.name, TEXT, 0xFFB7BAC0, CARD, BG);
-        LinearLayout.LayoutParams alp = new LinearLayout.LayoutParams(-1, dp(150));
-        alp.bottomMargin = dp(12);
-        body.addView(anim, alp);
-
-        String[] dose = Plan.dose(e, session, pace);
-        body.addView(text(e.name, 16, TEXT, true));
-        LinearLayout meta = new LinearLayout(this);
-        meta.setGravity(Gravity.CENTER_VERTICAL);
-        meta.setPadding(0, dp(4), 0, dp(4));
-        TextView doseView = text(dose[0], 15, TEXT, true);
-        meta.addView(doseView, new LinearLayout.LayoutParams(0, -2, 1));
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-2, -2);
-        lp.leftMargin = dp(8);
-        meta.addView(chip(e.gear, gearColor(e.gear), gearSoft(e.gear)), lp);
-        body.addView(meta);
-        if (dose[1] != null) {
-            TextView up = text("↑ " + dose[1] + " vs last time", 12, ACCENT, true);
-            up.setPadding(0, 0, 0, dp(4));
-            body.addView(up);
-        }
-        body.addView(text(e.cue, 13, SUB, false));
-    }
-
-    private boolean guardFuture(int day) {
-        if (day > store.rawPlanDay()) {
-            Toast.makeText(this, "You can mark this on day " + day, Toast.LENGTH_SHORT).show();
-            return true;
-        }
-        return false;
-    }
-
-    // ------------------------------------------------------------------- diet
-
-    private void renderDiet() {
-        final int day = selectedDay;
-        boolean veg = store.isVeg();
-        Diet.Menu menu = Diet.menu(day, veg);
-
-        content.addView(overline("₹100 · 120 G PROTEIN · MAINTAIN 70 KG"));
-        content.addView(title("Diet"));
-        content.addView(dayNav());
-        content.addView(segmented(veg));
-
-        LinearLayout summary = card();
-        summary.addView(text(menu.name, 17, TEXT, true));
-        LinearLayout stats = new LinearLayout(this);
-        stats.setPadding(0, dp(12), 0, 0);
-        stats.addView(stat(Math.round(menu.protein()) + " g", "protein"), new LinearLayout.LayoutParams(0, -2, 1));
-        stats.addView(stat(String.format(Locale.US, "%,d", Math.round(menu.kcal())), "kcal"),
-                new LinearLayout.LayoutParams(0, -2, 1));
-        stats.addView(stat("₹" + Math.round(menu.rupees()), "per day"), new LinearLayout.LayoutParams(0, -2, 1));
-        summary.addView(stats);
-        content.addView(summary);
-
-        for (int i = 0; i < menu.meals.length; i++) {
-            final int index = i;
-            Diet.Meal meal = menu.meals[i];
-            LinearLayout row = checkRow(store.isMealDone(day, i), new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (guardFuture(day)) return;
-                    store.setMealDone(day, index, !store.isMealDone(day, index));
-                    render();
-                }
-            });
-            LinearLayout body = (LinearLayout) row.getChildAt(1);
-            body.addView(text(meal.time.toUpperCase(Locale.US), 11, SUB, true));
-            TextView dish = text(meal.dish, 16, TEXT, true);
-            dish.setPadding(0, dp(2), 0, dp(8));
-            body.addView(dish);
-            for (Diet.Item item : meal.items) {
-                LinearLayout line = new LinearLayout(this);
-                line.setPadding(0, dp(2), 0, dp(2));
-                TextView name = text(item.label, 14, TEXT, false);
-                line.addView(name, new LinearLayout.LayoutParams(0, -2, 1));
-                line.addView(text(item.amount(), 14, SUB, false));
-                TextView p = text(item.protein() >= 0.5 ? Math.round(item.protein()) + " g" : "–", 14, ACCENT, false);
-                p.setGravity(Gravity.END);
-                line.addView(p, new LinearLayout.LayoutParams(dp(48), -2));
-                body.addView(line);
-            }
-            TextView foot = text(Math.round(meal.protein()) + " g protein · " + Math.round(meal.kcal())
-                    + " kcal · ₹" + Math.round(meal.rupees()), 12, SUB, false);
-            foot.setPadding(0, dp(8), 0, 0);
-            body.addView(foot);
-            content.addView(row);
-        }
-
-        LinearLayout tips = card();
-        tips.addView(text("Tips", 15, TEXT, true));
-        for (String t : Diet.TIPS) {
-            TextView tv = text("•  " + t, 13, SUB, false);
-            tv.setPadding(0, dp(6), 0, 0);
-            tips.addView(tv);
-        }
-        content.addView(tips);
-
-        LinearLayout prices = card();
-        prices.addView(text("Prices assumed", 15, TEXT, true));
-        TextView pn = text("Typical local market rates. Yours may differ a little by city and season. "
-                + "Onion, tomato and spices: ₹" + Math.round(Diet.MASALA_RUPEES) + "/day.", 12, SUB, false);
-        pn.setPadding(0, dp(4), 0, dp(6));
-        prices.addView(pn);
-        for (Diet.Food f : Diet.PRICE_LIST) {
-            LinearLayout line = new LinearLayout(this);
-            line.setPadding(0, dp(3), 0, dp(3));
-            line.addView(text(f.name, 13, TEXT, false), new LinearLayout.LayoutParams(0, -2, 1));
-            String price = "pc".equals(f.unit) ? "₹" + Math.round(f.rupees) + " each"
-                    : "₹" + Math.round(f.rupees * 10) + ("ml".equals(f.unit) ? "/L" : "/kg");
-            line.addView(text(price, 13, SUB, false));
-            prices.addView(line);
-        }
-        content.addView(prices);
-        content.addView(note("General guidance, not medical advice. Check with a doctor if you have a "
-                + "health condition or a soya, nut or dairy allergy."));
-    }
-
-    private View segmented(boolean veg) {
-        LinearLayout seg = new LinearLayout(this);
-        seg.setBackground(round(LINE, 12));
-        seg.setPadding(dp(4), dp(4), dp(4), dp(4));
-        String[] labels = {"Veg", "Non-veg"};
-        for (int i = 0; i < 2; i++) {
-            final boolean wantVeg = i == 0;
-            boolean on = wantVeg == veg;
-            TextView t = text(labels[i], 14, on ? TEXT : SUB, on);
-            t.setGravity(Gravity.CENTER);
-            t.setPadding(0, dp(9), 0, dp(9));
-            if (on) t.setBackground(round(CARD, 9));
-            t.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    store.setVeg(wantVeg);
-                    render();
-                }
-            });
-            seg.addView(t, new LinearLayout.LayoutParams(0, -2, 1));
-        }
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2);
-        lp.bottomMargin = dp(12);
-        seg.setLayoutParams(lp);
-        return seg;
-    }
-
-    private View stat(String value, String label) {
-        LinearLayout box = new LinearLayout(this);
-        box.setOrientation(LinearLayout.VERTICAL);
-        box.addView(text(value, 20, TEXT, true));
-        box.addView(text(label, 12, SUB, false));
-        return box;
-    }
-
-    // ------------------------------------------------------------------ water
-
-    private void renderWater() {
-        int total = store.waterToday();
-        int goal = Store.WATER_GOAL_ML;
-
-        content.addView(overline(new SimpleDateFormat("EEEE, d MMMM", Locale.getDefault())
-                .format(new Date()).toUpperCase(Locale.getDefault())));
-        content.addView(title("Water"));
-
-        LinearLayout ringCard = card();
-        ringCard.setGravity(Gravity.CENTER_HORIZONTAL);
-        RingView ring = new RingView(this, WATER_SOFT, WATER, TEXT, SUB);
-        ring.set(total / (float) goal, String.format(Locale.US, "%,d ml", total),
-                String.format(Locale.US, "of %,d ml", goal));
-        ringCard.addView(ring, new LinearLayout.LayoutParams(dp(220), dp(220)));
-        String left = total >= goal ? "Goal reached — nice work"
-                : String.format(Locale.US, "%,d ml to go (about %d glasses)", goal - total,
-                (goal - total + 199) / 200);
-        TextView status = text(left, 14, total >= goal ? WATER : SUB, total >= goal);
-        status.setGravity(Gravity.CENTER);
-        status.setPadding(0, dp(12), 0, dp(4));
-        ringCard.addView(status);
-        content.addView(ringCard);
-
-        LinearLayout buttons = new LinearLayout(this);
-        for (int i = 0; i < WATER_AMOUNTS.length; i++) {
-            final int ml = WATER_AMOUNTS[i];
-            TextView b = text("+" + ml + " ml", 16, WATER, true);
-            b.setGravity(Gravity.CENTER);
-            b.setPadding(0, dp(16), 0, dp(16));
-            b.setBackground(round(WATER_SOFT, 14));
-            b.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    store.addWater(ml);
-                    render();
-                }
-            });
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, -2, 1);
-            if (i > 0) lp.leftMargin = dp(10);
-            buttons.addView(b, lp);
-        }
-        LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(-1, -2);
-        blp.bottomMargin = dp(12);
-        content.addView(buttons, blp);
-
-        List<int[]> log = store.waterLog();
-        LinearLayout list = card();
-        LinearLayout header = new LinearLayout(this);
-        header.setGravity(Gravity.CENTER_VERTICAL);
-        header.addView(text("Today", 15, TEXT, true), new LinearLayout.LayoutParams(0, -2, 1));
-        if (!log.isEmpty()) {
-            TextView undo = text("Undo last", 14, WATER, true);
-            undo.setPadding(dp(8), dp(4), 0, dp(4));
-            undo.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    store.undoWater();
-                    render();
-                }
-            });
-            header.addView(undo);
-        }
-        list.addView(header);
-        if (log.isEmpty()) {
-            TextView empty = text("Nothing logged yet. Tap a button above each time you drink.", 13, SUB, false);
-            empty.setPadding(0, dp(8), 0, 0);
-            list.addView(empty);
-        }
-        for (int i = log.size() - 1; i >= 0; i--) {
-            int[] e = log.get(i);
-            LinearLayout line = new LinearLayout(this);
-            line.setPadding(0, dp(8), 0, 0);
-            line.addView(text(String.format(Locale.US, "%02d:%02d", e[0] / 60, e[0] % 60), 14, SUB, false),
-                    new LinearLayout.LayoutParams(0, -2, 1));
-            line.addView(text("+" + e[1] + " ml", 14, TEXT, false));
-            list.addView(line);
-        }
-        content.addView(list);
-    }
-
-    // --------------------------------------------------------------- progress
-
-    private void renderProgress() {
-        final int today = store.planDay();
-        content.addView(overline("90-DAY PLAN"));
-        content.addView(title("Progress"));
-
-        int completed = 0;
-        int workoutsDone = 0;
-        int workoutDays = 0;
-        int[] perLevel = new int[3];
-        for (int d = 1; d <= Plan.DAYS; d++) {
-            Plan.Workout w = Plan.workout(d);
-            boolean complete = isComplete(d);
-            if (!w.rest) workoutDays++;
-            if (complete) {
-                completed++;
-                perLevel[Plan.level(d) - 1]++;
-                if (!w.rest) workoutsDone++;
-            }
-        }
-        int streak = 0;
-        int d = isComplete(today) ? today : today - 1;
-        while (d >= 1 && isComplete(d)) {
-            streak++;
-            d--;
-        }
-
-        LinearLayout stats = card();
-        LinearLayout row = new LinearLayout(this);
-        row.addView(stat("Day " + today, "of " + Plan.DAYS), new LinearLayout.LayoutParams(0, -2, 1));
-        row.addView(stat(workoutsDone + "/" + workoutDays, "workouts"), new LinearLayout.LayoutParams(0, -2, 1));
-        row.addView(stat(streak + (streak == 1 ? " day" : " days"), "streak"), new LinearLayout.LayoutParams(0, -2, 1));
+        Gamify.Streak streak = Progress.streak(this);
+        int xp = Progress.totalXp(this);
+        int level = Gamify.levelForXp(xp);
+        LinearLayout stats = ui.card();
+        LinearLayout row = ui.row();
+        row.addView(ui.stat(String.valueOf(streak.current), getString(R.string.day_streak)), ui.weight(1));
+        row.addView(ui.stat(String.valueOf(level), getString(R.string.level)), ui.weight(1));
+        row.addView(ui.stat(String.valueOf(streak.freezes), getString(R.string.freezes)), ui.weight(1));
         stats.addView(row);
-        TextView pct = text(Math.round(completed * 100f / Plan.DAYS) + "% of the plan complete", 13, SUB, false);
-        pct.setPadding(0, dp(14), 0, dp(8));
-        stats.addView(pct);
-        stats.addView(bar(completed / (float) Plan.DAYS, ACCENT, ACCENT_SOFT));
+        stats.addView(ui.space(10));
+        int base = Gamify.xpForLevel(level), next = Gamify.xpForLevel(Math.min(Gamify.MAX_LEVEL, level + 1));
+        stats.addView(ui.progress(next > base ? (xp - base) / (float) (next - base) : 1f, p.gold, p.goldSoft));
+        TextView xpLine = ui.text(getString(R.string.xp_line, xp, Math.max(0, next - xp), Math.min(100, level + 1)), Ui.CAPTION);
+        xpLine.setPadding(0, ui.dp(6), 0, 0);
+        stats.addView(xpLine);
         content.addView(stats);
 
-        LinearLayout levels = card();
-        String[] names = {"Level 1 · Beginner", "Level 2 · Intermediate", "Level 3 · Advanced"};
-        String[] ranges = {"Days 1–30", "Days 31–60", "Days 61–90"};
-        for (int i = 0; i < 3; i++) {
-            LinearLayout line = new LinearLayout(this);
-            line.setGravity(Gravity.CENTER_VERTICAL);
-            line.setPadding(0, i == 0 ? 0 : dp(12), 0, dp(6));
-            boolean current = Plan.level(today) == i + 1;
-            line.addView(text(names[i], 15, current ? ACCENT : TEXT, true), new LinearLayout.LayoutParams(0, -2, 1));
-            line.addView(text(ranges[i] + " · " + perLevel[i] + "/30", 13, SUB, false));
-            levels.addView(line);
-            levels.addView(bar(perLevel[i] / 30f, ACCENT, ACCENT_SOFT));
-        }
-        content.addView(levels);
-
-        LinearLayout grid = card();
-        grid.addView(text("All 90 days", 15, TEXT, true));
-        TextView hint = text("Tap a day to open it.", 12, SUB, false);
-        hint.setPadding(0, dp(2), 0, dp(10));
-        grid.addView(hint);
-        for (int r = 0; r < 9; r++) {
-            LinearLayout line = new LinearLayout(this);
-            for (int c = 0; c < 10; c++) {
-                final int day = r * 10 + c + 1;
-                TextView cell = text(String.valueOf(day), 11, SUB, false);
-                cell.setGravity(Gravity.CENTER);
-                int done = store.workoutDoneCount(day);
-                if (isComplete(day)) {
-                    cell.setBackground(round(ACCENT, 8));
-                    cell.setTextColor(Color.WHITE);
-                } else if (done > 0) {
-                    cell.setBackground(round(ACCENT_SOFT, 8));
-                    cell.setTextColor(ACCENT);
-                } else if (day < today) {
-                    cell.setBackground(round(MISSED, 8));
-                } else {
-                    cell.setBackground(round(BG, 8));
-                }
-                if (day == today) {
-                    GradientDrawable g = (GradientDrawable) cell.getBackground();
-                    g.setStroke(dp(2), TEXT);
-                    cell.setTypeface(Typeface.DEFAULT_BOLD);
-                }
-                cell.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        selectedDay = day;
-                        tab = 0;
-                        render();
-                        scroll.scrollTo(0, 0);
-                    }
-                });
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dp(30), 1);
-                lp.setMargins(dp(2), dp(2), dp(2), dp(2));
-                line.addView(cell, lp);
-            }
-            grid.addView(line);
-        }
-        LinearLayout legend = new LinearLayout(this);
-        legend.setGravity(Gravity.CENTER_VERTICAL);
-        legend.setPadding(0, dp(12), 0, 0);
-        legend.addView(legendItem(ACCENT, "Done"));
-        legend.addView(legendItem(ACCENT_SOFT, "Partly"));
-        legend.addView(legendItem(MISSED, "Missed"));
-        grid.addView(legend);
-        content.addView(grid);
-
-        TextView restart = text("Restart plan from day 1", 14, 0xFFC0392B, true);
-        restart.setGravity(Gravity.CENTER);
-        restart.setPadding(0, dp(14), 0, dp(14));
-        restart.setOnClickListener(new View.OnClickListener() {
+        // Quick start
+        LinearLayout quick = ui.row();
+        quick.addView(quick(R.drawable.ic_breath, getString(R.string.quick_breathe), "blue", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new AlertDialog.Builder(MainActivity.this)
-                        .setTitle("Restart plan?")
-                        .setMessage("Today becomes day 1 and all workout and meal marks are cleared.")
-                        .setNegativeButton("Cancel", null)
-                        .setPositiveButton("Restart", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                store.restart();
-                                lastToday = store.planDay();
-                                selectedDay = lastToday;
-                                render();
-                            }
-                        })
-                        .show();
+                open(BreathActivity.class);
+            }
+        }), ui.margins(ui.weight(1), 0, 0, 5, 0));
+        quick.addView(quick(R.drawable.ic_kegel, getString(R.string.quick_kegel), "warm", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                open(KegelActivity.class);
+            }
+        }), ui.margins(ui.weight(1), 5, 0, 5, 0));
+        quick.addView(quick(R.drawable.ic_audio, getString(R.string.quick_audio), "purple", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                open(AudioActivity.class);
+            }
+        }), ui.margins(ui.weight(1), 5, 0, 0, 0));
+        content.addView(quick, ui.margins(ui.fill(), 0, 0, 0, 16));
+
+        // Today's plan
+        PlanGenerator.Plan plan = Plans.plan(this);
+        int today = Days.today();
+        int planDay = Plans.planDay(this, today);
+        PlanGenerator.Week week = plan.weeks.get(planDay / 7);
+        LinearLayout head = ui.row();
+        head.addView(ui.text(getString(R.string.todays_sessions), Ui.HEADING), ui.weight(1));
+        TextView edit = ui.text(getString(R.string.week_n_of_8, planDay / 7 + 1), Ui.LABEL, p.accent);
+        ui.clickable(edit, p.bg, 12, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                open(PlanActivity.class);
+            }
+        }, getString(R.string.open_plan));
+        edit.setPadding(ui.dp(8), ui.dp(8), ui.dp(8), ui.dp(8));
+        head.addView(edit);
+        content.addView(head);
+        TextView focus = ui.text(week.title + " · " + week.focus, Ui.SMALL);
+        focus.setPadding(0, 0, 0, ui.dp(10));
+        content.addView(focus);
+        for (final PlanGenerator.Session s : Plans.forDay(this, plan, planDay)) {
+            boolean done = Plans.done(this, today, s);
+            int[] tone = p.tone(Plans.tone(s.type));
+            String sub = (s.optional ? getString(R.string.optional) + " · " : "") + getString(R.string.n_min, s.minutes);
+            LinearLayout r = ui.listRow(done ? R.drawable.ic_check : Plans.icon(s.type),
+                    done ? new int[]{p.accent, p.accentSoft} : tone, Plans.title(this, s),
+                    done ? getString(R.string.done_today) : sub, null, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Plans.launch(MainActivity.this, s);
+                            if ("walk".equals(s.type)) render();
+                        }
+                    });
+            content.addView(r);
+        }
+
+        // Fitness program
+        content.addView(ui.space(12));
+        content.addView(ui.text(getString(R.string.fitness_title), Ui.HEADING));
+        content.addView(ui.space(8));
+        content.addView(ui.listRow(R.drawable.ic_dumbbell, p.tone("accent"), getString(R.string.fitness_card_title),
+                getString(R.string.fitness_card_sub), null, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        open(FitnessActivity.class);
+                    }
+                }));
+
+        // Gentle reminder of any doctor cards
+        List<String> flags = RedFlags.evaluate(Plans.profile(this));
+        if (!flags.isEmpty()) {
+            content.addView(ui.space(8));
+            LinearLayout n = ui.notice(R.drawable.ic_info, p.tone("blue"), getString(R.string.doctor_reminder_title),
+                    getString(R.string.doctor_reminder_body));
+            ui.clickable(n, p.blueSoft, 20, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    open(ArticleActivity.class, ArticleActivity.EXTRA_ID, "sa-01");
+                }
+            }, getString(R.string.doctor_reminder_title));
+            content.addView(n);
+        }
+        TextView edu = ui.text(getString(R.string.education_note), Ui.CAPTION);
+        edu.setPadding(0, ui.dp(12), 0, 0);
+        content.addView(edu);
+    }
+
+    private View quick(int icon, String label, String tone, View.OnClickListener l) {
+        int[] t = p.tone(tone);
+        LinearLayout box = ui.column();
+        box.setGravity(Gravity.CENTER);
+        box.setPadding(ui.dp(8), ui.dp(16), ui.dp(8), ui.dp(14));
+        box.addView(ui.iconBadge(icon, t[0], t[1], 44));
+        TextView tv = ui.text(label, Ui.LABEL);
+        tv.setGravity(Gravity.CENTER);
+        tv.setPadding(0, ui.dp(8), 0, 0);
+        box.addView(tv);
+        return ui.clickable(box, p.card, 20, l, label);
+    }
+
+    // ---------------------------------------------------------------- Programs
+
+    private void renderPrograms() {
+        content.addView(ui.text(getString(R.string.tab_programs), Ui.DISPLAY));
+        content.addView(ui.space(12));
+        JSONArray programs = Content.of(this).json("programs.json").optJSONArray("programs");
+        if (programs == null) return;
+        for (int i = 0; i < programs.length(); i++) {
+            final JSONObject pr = programs.optJSONObject(i);
+            int icon = getResources().getIdentifier("ic_" + pr.optString("icon", "dot"), "drawable", getPackageName());
+            content.addView(ui.listRow(icon == 0 ? R.drawable.ic_dot : icon, p.tone(pr.optString("tone")),
+                    pr.optString("title"), pr.optString("subtitle"), null, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            openProgram(pr);
+                        }
+                    }));
+        }
+    }
+
+    private void openProgram(JSONObject pr) {
+        String screen = pr.optString("screen");
+        String id = pr.optString("id");
+        switch (screen) {
+            case "plan": open(PlanActivity.class); break;
+            case "fitness": open(FitnessActivity.class); break;
+            case "kegel": open(KegelActivity.class); break;
+            case "breath": open(BreathActivity.class); break;
+            case "audio": open(AudioActivity.class); break;
+            case "journal": open(JournalActivity.class); break;
+            case "checkin": open(CheckInActivity.class); break;
+            default: open(ProgramActivity.class, ProgramActivity.EXTRA_ID, id);
+        }
+    }
+
+    // ----------------------------------------------------------------- Library
+
+    private void renderLibrary() {
+        content.addView(ui.text(getString(R.string.tab_library), Ui.DISPLAY));
+        content.addView(ui.space(12));
+        final EditText search = new EditText(this);
+        search.setHint(R.string.search_library);
+        search.setSingleLine(true);
+        search.setText(query);
+        search.setTextColor(p.text);
+        search.setHintTextColor(p.faint);
+        search.setBackground(ui.outline(p.card, 16, p.line, 1.5f));
+        search.setPadding(ui.dp(16), ui.dp(12), ui.dp(16), ui.dp(12));
+        search.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_search, 0, 0, 0);
+        search.setCompoundDrawablePadding(ui.dp(10));
+        if (search.getCompoundDrawablesRelative()[0] != null) search.getCompoundDrawablesRelative()[0].setTint(p.sub);
+        content.addView(search, ui.margins(ui.fill(), 0, 0, 0, 10));
+        final LinearLayout results = ui.column();
+
+        HorizontalScrollView hs = new HorizontalScrollView(this);
+        hs.setHorizontalScrollBarEnabled(false);
+        LinearLayout chips = ui.row();
+        String[][] cats = {{"", getString(R.string.all)}, {"*", getString(R.string.bookmarks)},
+                {"pelvic-floor", "Pelvic floor"}, {"last-longer", "Last longer"}, {"confidence", "Confidence"},
+                {"breathwork", "Breathing"}, {"diet", "Diet"}, {"exercise", "Exercise"}, {"lifestyle", "Lifestyle"},
+                {"intimacy", "Intimacy"}, {"safety", "Safety"}};
+        for (final String[] c : cats) {
+            boolean on = c[0].equals("*") ? bookmarksOnly : !bookmarksOnly && c[0].equals(category);
+            TextView chip = ui.chip(c[1], on ? p.onAccent : p.text, on ? p.accent : p.card);
+            chip.setMinHeight(ui.dp(40));
+            chip.setGravity(Gravity.CENTER);
+            chip.setPadding(ui.dp(14), ui.dp(8), ui.dp(14), ui.dp(8));
+            chip.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    bookmarksOnly = c[0].equals("*");
+                    category = bookmarksOnly ? "" : c[0];
+                    render();
+                }
+            });
+            ui.asButton(chip, c[1]);
+            chips.addView(chip, ui.margins(ui.wrap(), 0, 0, 8, 0));
+        }
+        hs.addView(chips);
+        content.addView(hs, ui.margins(ui.fill(), 0, 0, 0, 12));
+        content.addView(results);
+        fillResults(results);
+        search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int a, int b, int c) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int a, int b, int c) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                query = s.toString();
+                fillResults(results);
             }
         });
-        content.addView(restart);
+
+        content.addView(ui.space(12));
+        content.addView(ui.text(getString(R.string.guides_and_more), Ui.HEADING));
+        content.addView(ui.space(8));
+        content.addView(ui.listRow(R.drawable.ic_doc, p.tone("gold"), getString(R.string.pdf_guides),
+                getString(R.string.pdf_guides_sub), null, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        open(PdfActivity.class);
+                    }
+                }));
+        content.addView(ui.listRow(R.drawable.ic_external, p.tone("blue"), getString(R.string.further_reading),
+                getString(R.string.further_reading_sub), null, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        open(ArticleActivity.class, ArticleActivity.EXTRA_DOC, "further-reading.md");
+                    }
+                }));
     }
 
-    private boolean isComplete(int day) {
-        return store.workoutDoneCount(day) >= Plan.workout(day).exercises.length;
-    }
-
-    private View legendItem(int color, String label) {
-        LinearLayout item = new LinearLayout(this);
-        item.setGravity(Gravity.CENTER_VERTICAL);
-        item.setPadding(0, 0, dp(16), 0);
-        View sw = new View(this);
-        sw.setBackground(round(color, 4));
-        item.addView(sw, new LinearLayout.LayoutParams(dp(12), dp(12)));
-        TextView t = text(label, 12, SUB, false);
-        t.setPadding(dp(6), 0, 0, 0);
-        item.addView(t);
-        return item;
-    }
-
-    // ---------------------------------------------------------------- widgets
-
-    private View dayNav() {
-        LinearLayout nav = new LinearLayout(this);
-        nav.setGravity(Gravity.CENTER_VERTICAL);
-        nav.setBackground(round(CARD, 14));
-        TextView prev = navArrow("‹", selectedDay > 1, -1);
-        TextView next = navArrow("›", selectedDay < Plan.DAYS, 1);
-        LinearLayout mid = new LinearLayout(this);
-        mid.setOrientation(LinearLayout.VERTICAL);
-        mid.setGravity(Gravity.CENTER);
-        mid.addView(text("Day " + selectedDay + " of " + Plan.DAYS, 16, TEXT, true));
-        int today = store.planDay();
-        String sub = selectedDay == today ? "Today" : "Go to today";
-        TextView subView = text(sub, 12, selectedDay == today ? SUB : ACCENT, selectedDay != today);
-        mid.addView(subView);
-        if (selectedDay != today) {
-            mid.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    selectedDay = store.planDay();
-                    render();
-                }
-            });
+    private void fillResults(LinearLayout results) {
+        results.removeAllViews();
+        Content c = Content.of(this);
+        JSONObject marks = Vault.of(this).obj("bookmarks");
+        String q = query.trim().toLowerCase(Locale.getDefault());
+        int shown = 0;
+        for (final Content.Article a : c.articles()) {
+            if (bookmarksOnly && !marks.has(a.id)) continue;
+            if (!category.isEmpty() && !category.equals(a.category)) continue;
+            if (!q.isEmpty()) {
+                String hay = (a.title + " " + a.summary + " " + a.tags).toLowerCase(Locale.getDefault());
+                if (!hay.contains(q) && !Markdown.plain(c.articleBody(a.id)).toLowerCase(Locale.getDefault()).contains(q)) continue;
+            }
+            results.addView(ui.listRow(0, null, a.title, a.summary + " · " + getString(R.string.n_min_read, a.minutes),
+                    null, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            open(ArticleActivity.class, ArticleActivity.EXTRA_ID, a.id);
+                        }
+                    }));
+            shown++;
         }
-        nav.addView(prev, new LinearLayout.LayoutParams(dp(56), dp(56)));
-        nav.addView(mid, new LinearLayout.LayoutParams(0, -2, 1));
-        nav.addView(next, new LinearLayout.LayoutParams(dp(56), dp(56)));
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2);
-        lp.bottomMargin = dp(12);
-        nav.setLayoutParams(lp);
-        return nav;
+        if (shown == 0) results.addView(empty(getString(bookmarksOnly ? R.string.no_bookmarks : R.string.no_results)));
     }
 
-    private TextView navArrow(String glyph, boolean enabled, final int delta) {
-        TextView t = text(glyph, 28, enabled ? TEXT : LINE, false);
-        t.setGravity(Gravity.CENTER);
-        if (enabled) {
-            t.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    selectedDay += delta;
-                    render();
-                }
-            });
-        }
-        return t;
-    }
+    // ---------------------------------------------------------------- Progress
 
-    /** A card with a round check mark on the left and an empty body column on the right. */
-    private LinearLayout checkRow(boolean checked, View.OnClickListener onClick) {
-        LinearLayout row = card();
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setOnClickListener(onClick);
+    private void renderProgress() {
+        content.addView(ui.text(getString(R.string.tab_progress), Ui.DISPLAY));
+        content.addView(ui.space(12));
+        int xp = Progress.totalXp(this);
+        int level = Gamify.levelForXp(xp);
+        Gamify.Streak streak = Progress.streak(this);
+        LinearLayout top = ui.card();
+        LinearLayout row = ui.row();
+        row.addView(ui.stat(String.valueOf(level), getString(R.string.level_of_100)), ui.weight(1));
+        row.addView(ui.stat(String.valueOf(xp), getString(R.string.xp)), ui.weight(1));
+        row.addView(ui.stat(String.valueOf(streak.best), getString(R.string.best_streak)), ui.weight(1));
+        top.addView(row);
+        TextView fz = ui.text(getString(R.string.freeze_explainer, streak.current, streak.freezes), Ui.CAPTION);
+        fz.setPadding(0, ui.dp(10), 0, 0);
+        top.addView(fz);
+        content.addView(top);
 
-        TextView check = new TextView(this);
-        check.setGravity(Gravity.CENTER);
-        check.setTextSize(14);
-        check.setTypeface(Typeface.DEFAULT_BOLD);
-        GradientDrawable circle = new GradientDrawable();
-        circle.setShape(GradientDrawable.OVAL);
-        if (checked) {
-            circle.setColor(ACCENT);
-            check.setText("✓");
-            check.setTextColor(Color.WHITE);
+        // Sessions per week
+        int[][] weeks = Progress.weekly(this, 8);
+        LinearLayout chart = ui.card();
+        chart.addView(ui.text(getString(R.string.sessions_per_week), Ui.SUBHEAD));
+        chart.addView(ui.space(10));
+        chart.addView(bars(weeks, 0, p.accent));
+        TextView mins = ui.text(getString(R.string.minutes_this_week, weeks[7][1], weeks[7][0]), Ui.CAPTION);
+        mins.setPadding(0, ui.dp(8), 0, 0);
+        chart.addView(mins);
+        content.addView(chart);
+
+        // Self-rated control and confidence from weekly check-ins
+        List<Vault.Event> checkins = Vault.of(this).events("checkin");
+        LinearLayout trend = ui.card();
+        trend.addView(ui.text(getString(R.string.self_ratings), Ui.SUBHEAD));
+        if (checkins.isEmpty()) {
+            trend.addView(ui.text(getString(R.string.self_ratings_empty), Ui.SMALL));
         } else {
-            circle.setColor(CARD);
-            circle.setStroke(dp(2), LINE);
+            int n = Math.min(8, checkins.size());
+            int[][] control = new int[n][2], confidence = new int[n][2];
+            for (int i = 0; i < n; i++) {
+                JSONObject d = checkins.get(checkins.size() - n + i).data;
+                control[i][0] = d.optInt("control", 0);
+                confidence[i][0] = d.optInt("confidence", 0);
+            }
+            trend.addView(ui.text(getString(R.string.control), Ui.CAPTION));
+            trend.addView(bars(control, 0, p.warm));
+            trend.addView(ui.space(8));
+            trend.addView(ui.text(getString(R.string.confidence), Ui.CAPTION));
+            trend.addView(bars(confidence, 0, p.purple));
         }
-        check.setBackground(circle);
-        LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(dp(26), dp(26));
-        clp.rightMargin = dp(14);
-        clp.topMargin = dp(1);
-        row.addView(check, clp);
+        trend.addView(ui.button(getString(R.string.weekly_checkin), Ui.SECONDARY, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                open(CheckInActivity.class);
+            }
+        }));
+        content.addView(trend);
 
-        LinearLayout body = new LinearLayout(this);
-        body.setOrientation(LinearLayout.VERTICAL);
-        if (checked) body.setAlpha(0.55f);
-        row.addView(body, new LinearLayout.LayoutParams(0, -2, 1));
-        return row;
+        // Pelvic floor
+        LinearLayout kegel = ui.card();
+        kegel.addView(ui.text(getString(R.string.pelvic_level, Progress.kegelLevel(this)), Ui.SUBHEAD));
+        kegel.addView(ui.space(8));
+        kegel.addView(ui.progress(Progress.kegelLevel(this) / 10f, p.warm, p.warmSoft));
+        content.addView(kegel);
+
+        // Badges
+        content.addView(ui.text(getString(R.string.badges), Ui.HEADING));
+        content.addView(ui.space(8));
+        JSONObject meta = Content.of(this).json("badges.json");
+        LinearLayout grid = null;
+        int i = 0;
+        for (Map.Entry<String, Boolean> e : Progress.badges(this).entrySet()) {
+            if (i % 2 == 0) {
+                grid = ui.row();
+                content.addView(grid);
+            }
+            JSONObject bm = meta.optJSONObject(e.getKey());
+            String title = bm != null ? bm.optString("title") : e.getKey();
+            String desc = bm != null ? bm.optString("description") : "";
+            LinearLayout b = ui.card(e.getValue() ? p.goldSoft : p.card);
+            b.setAlpha(e.getValue() ? 1f : 0.55f);
+            b.addView(ui.icon(e.getValue() ? R.drawable.ic_star_filled : R.drawable.ic_star, e.getValue() ? p.gold : p.faint, 24));
+            b.addView(ui.text(title, Ui.LABEL));
+            b.addView(ui.text(desc, Ui.CAPTION));
+            b.setContentDescription(title + ". " + desc + (e.getValue() ? ". Earned" : ". Not earned yet"));
+            grid.addView(b, ui.margins(ui.weight(1), i % 2 == 0 ? 0 : 6, 0, i % 2 == 0 ? 6 : 0, 12));
+            i++;
+        }
+        if (i % 2 == 1 && grid != null) grid.addView(new View(this), ui.margins(ui.weight(1), 6, 0, 0, 12));
     }
 
-    private LinearLayout card() {
-        LinearLayout card = new LinearLayout(this);
-        card.setOrientation(LinearLayout.VERTICAL);
-        card.setBackground(round(CARD, 16));
-        card.setPadding(dp(16), dp(16), dp(16), dp(16));
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2);
-        lp.bottomMargin = dp(12);
-        card.setLayoutParams(lp);
-        return card;
-    }
-
-    private View bar(float fraction, int color, int trackColor) {
-        FrameLayout track = new FrameLayout(this);
-        track.setBackground(round(trackColor, 3));
-        track.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(6)));
-        View fill = new View(this);
-        fill.setBackground(round(color, 3));
-        LinearLayout weights = new LinearLayout(this);
-        float f = Math.max(0f, Math.min(1f, fraction));
-        weights.addView(fill, new LinearLayout.LayoutParams(0, -1, f));
-        weights.addView(new View(this), new LinearLayout.LayoutParams(0, -1, 1 - f));
-        track.addView(weights, new FrameLayout.LayoutParams(-1, -1));
-        return track;
-    }
-
-    private TextView chip(String label, int fg, int bg) {
-        TextView t = text(label, 11, fg, true);
-        t.setBackground(round(bg, 10));
-        t.setPadding(dp(8), dp(2), dp(8), dp(2));
-        return t;
-    }
-
-    private TextView overline(String s) {
-        TextView t = text(s, 12, SUB, true);
-        t.setLetterSpacing(0.06f);
-        t.setSingleLine(true);
-        t.setEllipsize(TextUtils.TruncateAt.END);
-        return t;
-    }
-
-    private TextView title(String s) {
-        TextView t = text(s, 30, TEXT, true);
-        t.setPadding(0, dp(2), 0, dp(14));
-        return t;
-    }
-
-    private TextView note(String s) {
-        TextView t = text(s, 13, SUB, false);
-        t.setPadding(dp(4), dp(2), dp(4), dp(14));
-        t.setLineSpacing(0, 1.15f);
-        return t;
-    }
-
-    private TextView text(String s, float sp, int color, boolean bold) {
-        TextView t = new TextView(this);
-        t.setText(s);
-        t.setTextSize(sp);
-        t.setTextColor(color);
-        t.setTypeface(Typeface.create(bold ? "sans-serif-medium" : "sans-serif", Typeface.NORMAL));
-        t.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
-        return t;
-    }
-
-    private GradientDrawable round(int color, int radiusDp) {
-        GradientDrawable g = new GradientDrawable();
-        g.setColor(color);
-        g.setCornerRadius(dp(radiusDp));
-        return g;
-    }
-
-    private GradientDrawable dot(int color) {
-        GradientDrawable g = round(color, 3);
-        g.setSize(dp(18), dp(3));
-        return g;
-    }
-
-    private int dp(int v) {
-        return Math.round(v * getResources().getDisplayMetrics().density);
+    /** Simple bar chart: one bar per value, scaled to the largest. */
+    private View bars(int[][] values, int col, int color) {
+        int max = 1;
+        for (int[] v : values) max = Math.max(max, v[col]);
+        LinearLayout chart = ui.row();
+        chart.setGravity(Gravity.BOTTOM);
+        StringBuilder desc = new StringBuilder();
+        for (int[] v : values) {
+            LinearLayout c = ui.column();
+            c.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+            TextView n = ui.text(String.valueOf(v[col]), Ui.CAPTION);
+            n.setGravity(Gravity.CENTER);
+            c.addView(n, ui.fill());
+            View bar = new View(this);
+            bar.setBackground(ui.round(v[col] > 0 ? color : p.line, 6));
+            int h = ui.dp(4 + 76f * v[col] / max);
+            c.addView(bar, new LinearLayout.LayoutParams(ui.dp(18), h));
+            chart.addView(c, new LinearLayout.LayoutParams(0, ui.dp(104), 1));
+            desc.append(v[col]).append(", ");
+        }
+        chart.setContentDescription(desc.toString());
+        return chart;
     }
 }

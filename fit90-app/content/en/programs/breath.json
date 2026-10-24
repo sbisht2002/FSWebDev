@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "last_reviewed": "2026-10-24",
+  "presets": [
+    {"id": "slow", "name": "Slow breathing", "summary": "In 4, out 6 · about 6 breaths a minute", "in": 4, "hold_in": 0, "out": 6, "hold_out": 0},
+    {"id": "box", "name": "Box breathing", "summary": "In 4, hold 4, out 4, hold 4", "in": 4, "hold_in": 4, "out": 4, "hold_out": 4},
+    {"id": "extended", "name": "Extended exhale", "summary": "In 4, out 8 · settles a racing heart", "in": 4, "hold_in": 0, "out": 8, "hold_out": 0},
+    {"id": "sigh", "name": "Physiological sigh", "summary": "Two breaths in through the nose, one long breath out", "in": 2, "top_up": 1, "hold_in": 0, "out": 6, "hold_out": 0}
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "last_reviewed": "2026-10-24",
+  "programs": [
+    {"id": "plan", "screen": "plan", "icon": "calendar", "tone": "accent", "title": "My 8-week plan", "subtitle": "Your personal weekly sessions"},
+    {"id": "fitness", "screen": "fitness", "icon": "dumbbell", "tone": "accent", "title": "Fitness 90", "subtitle": "Calisthenics, ₹100 protein diet and water, personalised"},
+    {"id": "pelvic-floor", "screen": "kegel", "icon": "kegel", "tone": "warm", "title": "Pelvic-floor trainer", "subtitle": "10 levels of Kegels and reverse Kegels"},
+    {"id": "last-longer", "icon": "timer", "tone": "warm", "title": "Last longer", "subtitle": "Arousal awareness, stop-start, squeeze, breathing",
+     "intro": "These behavioural techniques help many men gain more control. They work best with patience, and alongside medical care when needed. Practise them in private first, step by step.",
+     "safety": "If early ejaculation has been lifelong and bothers you a lot, see a doctor too: medical treatment is the first-line option in European guidelines, and it combines well with these techniques.",
+     "tools": [
+       {"type": "practice", "icon": "timer", "tone": "warm", "title": "Practice log", "subtitle": "Log technique and a 0–10 control rating"},
+       {"type": "breath", "ref": "slow", "minutes": 3, "icon": "breath", "tone": "blue", "title": "3-minute slow breathing", "subtitle": "Use before practice"}
+     ]},
+    {"id": "confidence", "icon": "shield", "tone": "purple", "title": "Confidence and anxiety", "subtitle": "CBT-style lessons, journal, calm routines",
+     "intro": "Performance anxiety is common and understandable. These lessons use ideas from cognitive behavioural therapy (CBT) to loosen anxious thoughts and bring attention back to sensation.",
+     "safety": "If anxiety or low mood are affecting your daily life, a psychologist or psychiatrist can help. In India, Tele-MANAS (14416) offers free support any time.",
+     "tools": [
+       {"type": "journal", "icon": "journal", "tone": "purple", "title": "Thought journal", "subtitle": "Private and encrypted"},
+       {"type": "audio", "ref": "calm-1", "icon": "audio", "tone": "blue", "title": "Pre-intimacy calm (4 min)", "subtitle": "Settle your body first"},
+       {"type": "audio", "ref": "scan-1", "icon": "audio", "tone": "blue", "title": "Body scan", "subtitle": "Notice sensation without judging"},
+       {"type": "article", "ref": "ca-07", "icon": "people", "tone": "purple", "title": "Sensate focus for couples", "subtitle": "A staged program with conversation prompts"}
+     ]},
+    {"id": "breathwork", "screen": "breath", "icon": "breath", "tone": "blue", "title": "Breathing", "subtitle": "Slow, box, extended exhale, sigh, custom"},
+    {"id": "audio", "screen": "audio", "icon": "audio", "tone": "blue", "title": "Guided audio", "subtitle": "Pelvic floor, body scan, calm, confidence, sleep"},
+    {"id": "exercise", "icon": "pulse", "tone": "accent", "title": "Exercise for sexual health", "subtitle": "Build to about 160 minutes a week",
+     "intro": "Regular aerobic exercise is one of the best-supported lifestyle steps for erections. Start with walking, build towards about 40 minutes, four times a week, and add strength work twice a week.",
+     "safety": "Check with a doctor before starting if you have chest pain, a heart condition, very high blood pressure, or get faint or very breathless with light activity.",
+     "tools": [
+       {"type": "fitness", "icon": "dumbbell", "tone": "accent", "title": "Home strength plan", "subtitle": "The Fitness 90 calisthenics program"},
+       {"type": "done", "kind": "walk", "ref": "walk", "minutes": 30, "icon": "pulse", "tone": "accent", "title": "Log a 30-minute walk", "subtitle": "Counts towards your weekly minutes"}
+     ]},
+    {"id": "diet", "icon": "leaf", "tone": "accent", "title": "Diet for sexual health", "subtitle": "Heart-healthy Indian and global eating",
+     "intro": "What's good for your heart and blood vessels is good for erections. No calorie counting here: just simple, affordable patterns that work.",
+     "safety": "If you have diabetes, heart or kidney disease, ask your doctor or a dietitian before changing your diet. This app never recommends supplements."},
+    {"id": "lifestyle", "icon": "moon", "tone": "blue", "title": "Sleep, stress and lifestyle", "subtitle": "Sleep, alcohol, smoking, stress, medicines",
+     "intro": "Small changes to sleep, alcohol and smoking add up. A weekly check-in shows your trends.",
+     "safety": "Never stop or change a prescribed medicine on your own. If you suspect a side effect, talk to your doctor.",
+     "tools": [
+       {"type": "checkin", "icon": "calendar", "tone": "blue", "title": "Weekly check-in", "subtitle": "Sleep, activity, alcohol, smoking"}
+     ]},
+    {"id": "intimacy", "icon": "people", "tone": "purple", "title": "Intimacy skills", "subtitle": "Communication, pacing, being a great partner",
+     "intro": "Good intimacy is built on communication, consent and attention to each other. These lessons are educational and non-explicit.",
+     "tools": [
+       {"type": "doc", "ref": "partner-guide.md", "icon": "heart", "tone": "purple", "title": "The Partner's Guide", "subtitle": "Share with your partner"}
+     ]},
+    {"id": "checkin", "screen": "checkin", "icon": "calendar", "tone": "blue", "title": "Weekly check-in", "subtitle": "Track lifestyle and self-ratings"}
+  ]
+}

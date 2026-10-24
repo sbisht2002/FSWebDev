@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "last_reviewed": "2026-10-24",
+  "levels": [
+    {"level": 1, "name": "Find and relax", "position": "lying", "focus": "Learn the right muscle and practise letting it go completely.", "sets": 2, "reps": 8, "hold": 3, "rest": 3, "flicks": 0, "drops": 5, "drop_seconds": 4, "set_rest": 30},
+    {"level": 2, "name": "Steady squeezes", "position": "lying", "focus": "Same squeeze every time, breathing normally throughout.", "sets": 3, "reps": 8, "hold": 3, "rest": 3, "flicks": 5, "drops": 5, "drop_seconds": 4, "set_rest": 30},
+    {"level": 3, "name": "Longer holds", "position": "lying", "focus": "Hold a little longer while the belly and buttocks stay soft.", "sets": 3, "reps": 10, "hold": 4, "rest": 4, "flicks": 8, "drops": 6, "drop_seconds": 5, "set_rest": 30},
+    {"level": 4, "name": "Build endurance", "position": "lying", "focus": "Five-second holds with full release between them.", "sets": 3, "reps": 10, "hold": 5, "rest": 5, "flicks": 10, "drops": 6, "drop_seconds": 5, "set_rest": 30},
+    {"level": 5, "name": "Sitting up", "position": "sitting", "focus": "The same work sitting upright, so the muscle works against gravity.", "sets": 3, "reps": 10, "hold": 6, "rest": 6, "flicks": 10, "drops": 8, "drop_seconds": 5, "set_rest": 30},
+    {"level": 6, "name": "Strong and smooth", "position": "sitting", "focus": "More repetitions at six seconds, still with complete letting go.", "sets": 3, "reps": 12, "hold": 6, "rest": 6, "flicks": 12, "drops": 8, "drop_seconds": 6, "set_rest": 30},
+    {"level": 7, "name": "Standing", "position": "standing", "focus": "Standing tall, the hardest position for the pelvic floor.", "sets": 3, "reps": 12, "hold": 8, "rest": 8, "flicks": 15, "drops": 8, "drop_seconds": 6, "set_rest": 40},
+    {"level": 8, "name": "Long holds", "position": "standing", "focus": "Ten-second holds. Quality beats quantity: stop a set if form slips.", "sets": 3, "reps": 10, "hold": 10, "rest": 10, "flicks": 15, "drops": 10, "drop_seconds": 6, "set_rest": 45},
+    {"level": 9, "name": "Control", "position": "standing", "focus": "Four sets with long holds and fast flicks for fine control.", "sets": 4, "reps": 10, "hold": 10, "rest": 10, "flicks": 20, "drops": 10, "drop_seconds": 6, "set_rest": 45},
+    {"level": 10, "name": "Maintenance and daily life", "position": "moving", "focus": "Keep strength with this session and short squeezes during daily tasks like lifting or standing up.", "sets": 4, "reps": 12, "hold": 10, "rest": 10, "flicks": 20, "drops": 10, "drop_seconds": 6, "set_rest": 45}
+  ]
+}

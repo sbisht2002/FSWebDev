@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="background">#FFF6F6F3</color>
-    <color name="accent">#FF1E8A5A</color>
+    <color name="bg_light">#FFF7F3EE</color>
+    <color name="bg_dark">#FF161412</color>
+    <color name="accent_light">#FF357A61</color>
+    <color name="accent_dark">#FF6BB696</color>
+    <color name="icon_bg">#FF2F6E57</color>
+    <color name="icon_discreet_bg">#FFE9E4DD</color>
 </resources>

@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "last_reviewed": "2026-10-24",
+  "chest_pain": {"urgent": true, "title": "Chest pain or breathlessness when active", "body": "Please see a doctor soon, before starting any new exercise. If you have chest pain right now, call **112**."},
+  "ed_cardio": {"urgent": false, "title": "Erection problems with diabetes, blood pressure or heart disease", "body": "Erection problems can be an early sign of heart and blood-vessel disease. Please mention them to your doctor. A check-up can protect your heart as well as your sex life."},
+  "ed_recent": {"urgent": false, "title": "Sudden or recent erection problems", "body": "A recent change is worth a check-up with a doctor, a urologist or an andrologist. They can look for causes such as blood-vessel problems, hormones or medicines."},
+  "pain_blood": {"urgent": false, "title": "Pain, blood, a painful bend or a lump", "body": "Please see a doctor or urologist. These need a proper examination."},
+  "pelvic_pain": {"urgent": false, "title": "Pelvic pain or urinary problems", "body": "Stop pelvic-floor exercises if they hurt, and see a doctor or a pelvic-floor physiotherapist. The trainer will use its gentle, relaxation-first version for you."},
+  "lifelong_pe": {"urgent": false, "title": "Lifelong early ejaculation that bothers you", "body": "In European urology guidelines, medical treatment is the first-line option for lifelong early ejaculation. A doctor can talk you through it, and the techniques in this app work well alongside."},
+  "low_desire": {"urgent": false, "title": "Low desire with tiredness or low mood", "body": "This can come from hormones, sleep problems, medicines or depression. A doctor can check, often with a simple blood test."},
+  "medicines": {"urgent": false, "title": "Medicines and side effects", "body": "Some medicines can affect erections, ejaculation or desire. Never stop a medicine on your own. Ask your doctor whether there are alternatives."},
+  "mental_health": {"urgent": false, "title": "Anxiety, low mood or relationship stress", "body": "A psychologist, psychiatrist or a qualified sex therapist can help. In India, **Tele-MANAS (14416)** offers free, confidential mental-health support any time."},
+  "resources": {"title": "Where to get help in India", "body": "- A **urologist or andrologist** for erection, ejaculation and pain problems\n- A **qualified sex therapist** for sexual and relationship concerns\n- A **psychiatrist or psychologist** for anxiety and low mood\n- **Tele-MANAS: 14416** (free, any time)\n- **Emergency: 112** (including an erection lasting more than 4 hours)"}
+}

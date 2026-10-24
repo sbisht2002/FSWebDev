@@ -1,0 +1,32 @@
+{
+  "version": "1.0.0",
+  "last_reviewed": "2026-10-24",
+  "week_themes": [
+    {"title": "Foundations", "focus": "Find the right muscles, learn to let them go, and slow your breathing."},
+    {"title": "Awareness", "focus": "Notice tension, thoughts and sensations without judging them."},
+    {"title": "Control", "focus": "Practise techniques step by step and build pelvic-floor endurance."},
+    {"title": "Confidence", "focus": "Work on unhelpful thoughts and stay with sensation, not performance."},
+    {"title": "Building", "focus": "Longer holds, more practice and steady lifestyle habits."},
+    {"title": "Integration", "focus": "Bring breathing and relaxation into everyday moments."},
+    {"title": "Connection", "focus": "Communication, pacing and closeness, solo or with a partner."},
+    {"title": "Consolidate", "focus": "Keep what works, plan your next steps and celebrate progress."}
+  ],
+  "safety": "sa-01",
+  "foundation": ["pf-01", "pf-02", "pf-03"],
+  "lifestyle": {"smoking": "ls-03", "alcohol": "ls-02", "sleep": "ls-01", "sitting": "ex-01"},
+  "tracks": {
+    "last_longer": ["ll-01", "ll-02", "br-01", "ll-03", "ll-04", "ll-05", "ll-06", "ca-04"],
+    "firmer": ["ex-01", "di-01", "ls-01", "di-02", "ex-02", "ls-05", "ls-06", "di-03"],
+    "less_anxiety": ["ca-01", "br-01", "ca-02", "ca-03", "ca-04", "ca-05", "ca-06", "ca-07"],
+    "intimacy": ["in-01", "in-02", "in-03", "in-04", "in-05", "in-07", "in-08", "in-06"],
+    "fitness": ["ex-01", "ex-02", "ex-03", "di-02", "ls-01", "di-04"]
+  },
+  "audio": {
+    "calm": [{"id": "calm-1", "level": 1}, {"id": "calm-2", "level": 2}, {"id": "calm-3", "level": 3}],
+    "confidence": [{"id": "conf-1", "level": 1}, {"id": "conf-2", "level": 2}, {"id": "conf-3", "level": 3}],
+    "bodyscan": [{"id": "scan-1", "level": 1}, {"id": "scan-2", "level": 2}, {"id": "scan-3", "level": 3}],
+    "arousal": [{"id": "aware-1", "level": 1}, {"id": "aware-2", "level": 2}, {"id": "aware-3", "level": 3}],
+    "sleep": [{"id": "sleep-1", "level": 1}, {"id": "sleep-2", "level": 2}],
+    "pelvic": [{"id": "pelvic-1", "level": 1}, {"id": "pelvic-2", "level": 2}, {"id": "pelvic-3", "level": 3}]
+  }
+}

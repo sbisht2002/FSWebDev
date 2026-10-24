@@ -1,0 +1,17 @@
+{
+  "first_session": {"title": "First step", "description": "Finish your first session"},
+  "first_week": {"title": "First week", "description": "Be active on 7 days"},
+  "streak_7": {"title": "7-day streak", "description": "Seven days in a row"},
+  "streak_30": {"title": "30-day streak", "description": "Thirty days in a row"},
+  "sessions_25": {"title": "Regular", "description": "25 sessions done"},
+  "sessions_100": {"title": "Committed", "description": "100 sessions done"},
+  "kegel_5": {"title": "Halfway strong", "description": "Reach pelvic-floor level 5"},
+  "kegel_10": {"title": "Top level", "description": "Reach pelvic-floor level 10"},
+  "breath_10": {"title": "Calm breather", "description": "10 breathing sessions"},
+  "audio_10": {"title": "Good listener", "description": "10 guided audio sessions"},
+  "lessons_10": {"title": "Curious mind", "description": "Read 10 lessons"},
+  "journal_5": {"title": "Reflective", "description": "5 journal entries"},
+  "checkins_4": {"title": "Self-aware", "description": "4 weekly check-ins"},
+  "workouts_30": {"title": "Fit and steady", "description": "30 fitness workouts"},
+  "program_complete": {"title": "Program completed", "description": "Finish the 8-week plan"}
+}

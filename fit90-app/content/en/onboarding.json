@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "last_reviewed": "2026-10-24",
+  "questions": [
+    {"id": "goals", "type": "multi", "required": true, "title": "What would you like help with?", "subtitle": "Pick all that apply.",
+     "options": [{"id": "last_longer", "label": "Lasting longer"}, {"id": "firmer", "label": "Firmer erections"}, {"id": "less_anxiety", "label": "Less anxiety"}, {"id": "intimacy", "label": "Better intimacy"}, {"id": "fitness", "label": "General fitness"}]},
+    {"id": "onset", "type": "single", "show_if_goal": ["last_longer", "firmer"], "title": "Has this always been the case, or is it recent?",
+     "options": [{"id": "lifelong", "label": "It's always been like this"}, {"id": "recent", "label": "It started in the last year or so"}, {"id": "sudden", "label": "It started suddenly"}, {"id": "unsure", "label": "Not sure"}, {"id": "none", "label": "No real problem, just improving"}]},
+    {"id": "bother", "type": "single", "show_if_goal": ["last_longer", "firmer"], "title": "How much does it bother you or your partner?",
+     "options": [{"id": "little", "label": "A little"}, {"id": "lot", "label": "A lot"}]},
+    {"id": "health", "type": "multi", "title": "Do any of these apply to you?", "subtitle": "This only decides which tips to show. It stays encrypted on your phone.",
+     "options": [{"id": "diabetes", "label": "Diabetes"}, {"id": "high_bp", "label": "High blood pressure"}, {"id": "heart", "label": "Heart disease"}, {"id": "chest_pain", "label": "Chest pain or breathlessness when active"}, {"id": "pain_blood", "label": "Pain, or blood in urine or semen"}, {"id": "bend_lump", "label": "A painful bend or a lump"}, {"id": "pelvic_pain", "label": "Pelvic or genital pain"}, {"id": "urinary", "label": "Urinary problems"}, {"id": "low_desire_mood", "label": "Low desire with tiredness or low mood"}, {"id": "medicines", "label": "I take regular medicines"}, {"id": "anxiety_low_mood", "label": "A lot of anxiety or low mood"}, {"id": "relationship_stress", "label": "Relationship stress"}, {"id": "none", "label": "None of these"}]},
+    {"id": "partner", "type": "single", "title": "What's your relationship status?",
+     "options": [{"id": "partner", "label": "In a relationship"}, {"id": "dating", "label": "Dating"}, {"id": "single", "label": "Single"}, {"id": "prefer_not", "label": "Prefer not to say"}]},
+    {"id": "activity", "type": "single", "title": "How active are you?",
+     "options": [{"id": "sitting", "label": "Mostly sitting"}, {"id": "light", "label": "Light: some walking"}, {"id": "active", "label": "Active 3–4 days a week"}, {"id": "very_active", "label": "Very active"}]},
+    {"id": "sleep", "type": "single", "title": "How much do you usually sleep?",
+     "options": [{"id": "under6", "label": "Less than 6 hours"}, {"id": "6_7", "label": "6–7 hours"}, {"id": "7_9", "label": "7–9 hours"}, {"id": "over9", "label": "More than 9 hours"}]},
+    {"id": "smoking", "type": "single", "title": "Do you smoke or vape?",
+     "options": [{"id": "no", "label": "No"}, {"id": "sometimes", "label": "Sometimes"}, {"id": "daily", "label": "Daily"}]},
+    {"id": "alcohol", "type": "single", "title": "How many alcoholic drinks in a typical week?",
+     "options": [{"id": "none", "label": "None"}, {"id": "low", "label": "1–7"}, {"id": "medium", "label": "8–14"}, {"id": "high", "label": "15 or more"}]},
+    {"id": "diet", "type": "single", "title": "How do you eat?",
+     "options": [{"id": "veg", "label": "Vegetarian"}, {"id": "nonveg", "label": "Non-vegetarian"}, {"id": "egg", "label": "Eggetarian"}, {"id": "vegan", "label": "Vegan"}]},
+    {"id": "minutes", "type": "single", "title": "How many minutes a day can you give?",
+     "options": [{"id": "5", "label": "5 minutes"}, {"id": "10", "label": "10 minutes"}, {"id": "15", "label": "15 minutes"}, {"id": "20", "label": "20 minutes"}]},
+    {"id": "reminder", "type": "time", "title": "When should we remind you?", "subtitle": "Reminders say only \"Time for your session\"."}
+  ]
+}
