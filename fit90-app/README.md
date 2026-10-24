@@ -1,47 +1,102 @@
-# Fit90 — 90-day home calisthenics, diet & water tracker (Android)
+# Fit90
 
-**`Fit90.apk`** in this folder is a ready-to-install build (Android 5.0+, targets Android 15).
+A private, offline Android app for men's fitness and sexual health: a personalised 90-day
+calisthenics + ₹100 protein diet program, a 10-level pelvic-floor trainer, breathwork,
+guided audio, last-longer and confidence programs, sourced lessons, PDF guides and progress
+tracking. No account, no ads, no trackers; everything is stored encrypted on the phone.
 
-## What's inside
-**Workout** — 90-day plan using only bodyweight, a pull-up bar and two dumbbells.
-- Level 1 Beginner (days 1–30), Level 2 Intermediate (31–60), Level 3 Advanced (61–90)
-- Weekly split: Push · Pull · Legs & Core · Push · Pull · Legs & Core · Rest
-- Every exercise has an animated stick-figure demo, sets × reps, the equipment it needs and a form cue;
-  tap to mark it done
-- Targets rise automatically: reps or seconds go up each session (shown as "↑ +1 rep vs last time"),
-  then reset to the harder exercises of the next level
-- Warm-up, cool-down and a weekly progression tip
+**`Fit90.apk`** in this folder is a ready-to-install debug-signed build (Android 6.0+, targets Android 15).
 
-**Stamina** — daily pelvic-floor and stamina routine (10–15 min + cardio), 3 levels that follow the plan.
-- Slow, quick, long-hold and "elevator" Kegels, glute bridges and squats with a pelvic squeeze,
-  reverse-Kegel breathing, hip mobility and cardio
-- Tap to mark each item; shows a daily streak and evidence-based notes (no size myths)
+## What's in the app
 
-**Diet** — budget Indian meals for a 70 kg, 24-year-old maintaining weight while building muscle.
-- About 120 g protein, about 2,400–2,570 kcal, at most ₹100 a day (all 6 menus: 121–127 g, ₹88–99)
-- Veg / Non-veg switch you can flip any time; 3 rotating menus each
-- Every item shows its quantity and protein; every meal its protein, kcal and cost; tap to mark eaten
-- Prices used for the costs are listed in the app
+| Area | What it does |
+|---|---|
+| Onboarding | 18+ gate, welcome, privacy promise, 12-question quiz (goals, onset, health check, partner, activity, sleep, smoking, alcohol, diet, minutes/day, reminder time), optional body profile, non-blocking "also talk to a doctor" cards, plan preview |
+| 8-week plan | Deterministic generator (`core/PlanGenerator`), 1–3 sessions a day within the chosen minutes, weekly view, skip/restore, change minutes, retake quiz, restart |
+| Fitness 90 | 90-day home calisthenics (3 levels, animated demos, auto progression), ₹100/day Indian veg/non-veg menus, water tracker. **Personalised** from height, weight, age, target weight and body goal (muscular / lean / maintain): calories (Mifflin–St Jeor × activity, safe cut/gain rates), protein g/kg, water, menus scaled to targets with honest cost, extra sets, cardio finishers, low-impact swaps for BMI ≥ 30 |
+| Pelvic-floor trainer | 10 levels (sets × reps, hold/rest, quick flicks, reverse-Kegel "drops"), level-up after 5 sessions when the last 3 felt easy, step-back suggestion, relaxation-first variant for pain/anxiety, lessons |
+| Session player | Foreground media service: keeps running with the screen locked; TTS voice, tones, vibration, optional soft background noise, captions, animated cue, pause/resume/stop, reflection (ease + mood + note) |
+| Breathing | Slow (6/min), box, extended exhale, physiological sigh, custom timings; 1–10 min |
+| Guided audio | 60 scripts in 7 categories read by on-device TTS with captions |
+| Programs | Last longer (practice log, 0–10 control only), Confidence (CBT lessons, thought journal, sensate focus), Exercise, Diet, Sleep & lifestyle (weekly check-in), Intimacy skills (+ Partner's Guide) |
+| Library | 40 articles (600–1,500 words, sources, last-reviewed date), search, categories, bookmarks, 7 PDF guides (view, save, share), further reading |
+| Progress | XP, 100 levels, streaks with freeze days, badges, sessions per week, self-rated control/confidence trends, pelvic-floor level |
+| Privacy | AES-256-GCM encrypted SQLite (Android Keystore key), cloud backup off, PIN + biometric lock, hidden in app switcher, discreet icon/name ("Daily"), export JSON, delete everything, neutral notifications, no INTERNET permission unless the coach/downloads are enabled |
 
-**Water** — 2 L daily goal with +100 / +200 / +500 ml buttons, a progress ring, today's log and undo.
-Resets automatically each day.
+## Build
 
-**Progress** — day X of 90, workouts done, streak, per-level progress and a 90-day grid
-(done / partly / missed). Tap any day to open it. "Restart plan" sets today as day 1.
+Plain SDK tools; no Gradle, no Google downloads (the Android framework jars come from Maven Central via `tools/fetch_sdk.sh`).
 
-All data stays on the phone (no internet permission).
-
-## Build from source
 ```sh
-sudo apt-get install aapt android-sdk-platform-23 dalvik-exchange apksigner zipalign
+sudo apt-get install aapt dalvik-exchange apksigner zipalign default-jdk python3-pip
+pip install -r tools/requirements.txt     # reportlab, for the PDF guides
 ./build.sh
 ```
 
-## Code
-- `src/com/fswebdev/fit90/Plan.java` – the 90-day workout program
-- `src/com/fswebdev/fit90/Pelvic.java` – the daily pelvic-floor & stamina routine
-- `src/com/fswebdev/fit90/Diet.java` – foods, prices and menus (totals are computed from these)
-- `src/com/fswebdev/fit90/Store.java` – saved progress, diet choice and water log
-- `src/com/fswebdev/fit90/MainActivity.java` – the four screens
-- `src/com/fswebdev/fit90/Anim.java`, `AnimView.java` – exercise animations (poses + two-bone IK)
-- `src/com/fswebdev/fit90/RingView.java` – water progress ring
+`build.sh` runs the content QA, packs `/content` into the APK, builds the PDF guides, generates `BuildConfig`
+and the manifest, compiles, dexes and signs. Flags (environment variables):
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `AI_COACH_ENABLED` | `false` | Show the AI coach tab (needs `COACH_URL`) |
+| `COACH_URL` | | Your deployed coach proxy |
+| `COACH_NAME` | `Kai` | Coach display name |
+| `AUDIO_BASE_URL` | | Where pre-rendered audio can be downloaded from |
+| `SKIP_PDFS` | `0` | Reuse PDFs from the last build |
+| `KEYSTORE`, `KS_PASS`, `KEY_PASS` | debug | Release signing |
+
+The INTERNET permission is only added when the coach or audio downloads are enabled.
+
+## Tests
+
+```sh
+./build.sh
+gradle -p tests test        # unit tests + Robolectric screen tests; screenshots in tests/build/screenshots
+```
+
+Unit tests cover the plan generator (determinism, budget, relaxation-first, sensate focus only with a partner,
+lifestyle lessons, walks), Kegel level-up rules, XP/levels, streak freezes, red flags, fitness targets and the
+script parser. Screen tests open every screen against the real APK resources. Google Maven isn't used:
+the few `androidx.test` classes Robolectric needs are small stand-ins in `tests/src/test/java/androidx`.
+
+## Editing content
+
+All content lives in `/content` (markdown + JSON, each with `version` and `last_reviewed`):
+
+- `content/en/articles/*.md`: lessons/articles. Front matter + body ending with the disclaimer, `## Sources` and `*Last reviewed: YYYY-MM-DD*`.
+- `content/en/audio/*.md`: generated by `tools/generate_scripts.py` (edit the templates there, then run it; `--all` writes 160+).
+- `content/en/*.json`: quiz (`onboarding.json`), doctor cards (`redflags.json`), plan config (`plan.json`), programs, Kegel levels, breathing presets, badges, PDF guides.
+- `content/en/legal/*.md`, `further-reading.md`, `partner-guide.md`.
+
+**Content QA** (`python3 tools/content_qa.py content`, run by every build) fails if an article lacks front matter,
+is outside 600–1,500 words, misses the disclaimer, has fewer than two dated, linked sources, has a mismatched
+review date, if an audio script has bad markers, or if a banned phrase appears anywhere ("cure", "guaranteed",
+"#1", "clinically proven", or "sex therapist" describing the app/coach).
+
+To translate, copy `content/en` to `content/<lang>` and `res/values/strings.xml` to `res/values-<lang>/`.
+
+## PDF guides
+
+`python3 tools/build_pdfs.py content build/assets/pdf` (run by `build.sh`). Guides are defined in `content/en/guides.json`.
+
+## Code map
+
+- `core/`: pure Java, unit-tested: `PlanGenerator`, `Kegel`, `Gamify`, `RedFlags`, `FitnessTargets`, `Profile`, `Days`
+- `session/`: `Timeline` (Kegel/breath/script timelines) and `PlayerService`
+- `data/`: `Crypto`, `Vault` (encrypted SQLite), `Settings`, `Progress`, `ShareProvider`
+- `content/`: `Content` (assets + index) and `Markdown` renderer
+- `ui/`: `Palette` (warm light/dark), `Ui` kit, `BaseActivity`, `CueView`
+- `fitness/`: the Fit90 workout/diet/water program and body profile
+- Activities: `MainActivity` (Today/Programs/Library/Progress), onboarding, plan, trainers, player, programs, journal, check-in, practice log, settings, lock, PDF viewer
+
+## Not done yet
+
+Planned next, in this order:
+
+1. **AI coach:** a serverless proxy (Anthropic Messages API, `AI_MODEL` defaulting to `claude-haiku-5-5`, prompt caching, per-device daily limit, rate limit, spend cap and kill switch), a versioned system prompt, a streaming chat screen and an eval set with a runner. The app hides the coach today (`AI_COACH_ENABLED=false`).
+2. **Diet meal plans:** 7-day plans in five variants with recipes and an exportable grocery list. The diet lessons are done.
+3. **Audio pre-render pipeline:** `tools/render_audio.py` with pluggable TTS providers, plus the player preferring rendered files and offering optional downloads. Playback today uses on-device TTS.
+4. **Store listing drafts and Google Play data-safety answers.**
+5. **A full accessibility pass with TalkBack.**
+
+Medical content was written from published guidelines and reviews and checks out against them, but it **has not been reviewed by a clinician**. Have a qualified doctor review it before any public release.
