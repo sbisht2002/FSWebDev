@@ -63,6 +63,7 @@ public abstract class BaseActivity extends Activity {
         w.setStatusBarColor(p.bg);
         w.setNavigationBarColor(p.bg);
         if (Build.VERSION.SDK_INT >= 30) {
+            w.getDecorView(); // installs the decor so the insets controller exists
             w.setDecorFitsSystemWindows(false);
             WindowInsetsController ctl = w.getInsetsController();
             if (ctl != null) {

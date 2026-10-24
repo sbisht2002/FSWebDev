@@ -1,0 +1,37 @@
+// Unit and Robolectric UI tests. Run ../build.sh first, then: gradle -p tests test
+// Uses only Maven Central. androidx.test (Google Maven) is replaced by the small
+// stand-ins under src/test/java/androidx, which is all Robolectric needs here.
+plugins { id 'java' }
+repositories { mavenCentral() }
+java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
+
+def sdk = System.getenv('SDK_CACHE') ?: "${System.getProperty('user.home')}/.cache/fit90-sdk"
+configurations { androidAll }
+dependencies {
+  testImplementation files('../build/classes')
+  testImplementation('org.robolectric:robolectric:4.14.1') { exclude group: 'androidx.test'; exclude group: 'androidx.test.espresso' }
+  testImplementation 'junit:junit:4.13.2'
+  testImplementation files("${sdk}/android-all-15.jar")
+  androidAll('org.robolectric:android-all-instrumented:15-robolectric-12650502-i7') { transitive = false }
+}
+tasks.register('fetchAndroidAll', Copy) { from configurations.androidAll; into "$buildDir/android-all" }
+tasks.register('testConfig') {
+  doLast {
+    def f = file("$buildDir/test-config/com/android/tools/test_config.properties")
+    f.parentFile.mkdirs()
+    def root = file('..').absolutePath
+    f.text = "android_resource_apk=${root}/build/unsigned.apk\nandroid_merged_manifest=${root}/build/AndroidManifest.xml\nandroid_custom_package=com.fswebdev.fit90\n"
+  }
+}
+sourceSets { test { resources { srcDir "$buildDir/test-config" } } }
+processTestResources.dependsOn testConfig
+test {
+  dependsOn fetchAndroidAll
+  systemProperty 'robolectric.offline', 'true'
+  systemProperty 'robolectric.dependency.dir', "$buildDir/android-all"
+  systemProperty 'robolectric.graphicsMode', 'NATIVE'
+  systemProperty 'screenshots.dir', "$buildDir/screenshots"
+  systemProperty 'content.dir', file('../content').absolutePath
+  testLogging { events 'failed'; exceptionFormat = 'full'; showStandardStreams = true }
+  outputs.upToDateWhen { false }
+}

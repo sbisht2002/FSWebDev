@@ -138,7 +138,9 @@ public final class PlanGenerator {
                         if (lesson != null) candidates.add(lesson);
                     }
                     Session practice = practiceFor(p, w, d);
-                    if (practice != null) candidates.add(practice);
+                    // Weekly couple sessions go first so they always fit; daily practice after training.
+                    if (practice != null && "sensate".equals(practice.type)) candidates.add(0, practice);
+                    else if (practice != null) candidates.add(practice);
                     if (budget >= 10) {
                         String cat = audioCategory(p, w, d);
                         String a = pick(audio, cat, w, dayIndex, availableAudio);
